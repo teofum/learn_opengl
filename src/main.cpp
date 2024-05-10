@@ -4,28 +4,10 @@
 #include <GLFW/glfw3.h>
 
 #include <shader.h>
+#include <program.h>
 
 #define WIDTH 800
 #define HEIGHT 600
-
-constexpr const char *vertex_src = "#version 330 core\n"
-                                   "in vec3 aPos;\n"
-                                   "in vec3 aColor;\n"
-                                   "\n"
-                                   "out vec3 color;\n"
-                                   "\n"
-                                   "void main() {\n"
-                                   "    color = aColor;\n"
-                                   "    gl_Position = vec4(aPos, 1.0);\n"
-                                   "}";
-
-constexpr const char *fragment_src = "#version 330 core\n"
-                                     "out vec4 FragColor;\n"
-                                     "in vec3 color;\n"
-                                     "\n"
-                                     "void main() {\n"
-                                     "    FragColor = vec4(color, 1.0f);\n"
-                                     "}";
 
 void framebuffer_size_callback(GLFWwindow *win, int width, int height) {
   glViewport(0, 0, width, height);
@@ -69,36 +51,7 @@ int main() {
 
   // Compile shaders and link program
   // --------------------------------------------
-  int success;
-  unsigned vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_src, &success);
-  if (!success) {
-    glfwTerminate();
-    return -1;
-  }
-
-  unsigned fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_src, &success);
-  if (!success) {
-    glfwTerminate();
-    return -1;
-  }
-
-  unsigned program = glCreateProgram();
-  glAttachShader(program, vertex_shader);
-  glAttachShader(program, fragment_shader);
-  glLinkProgram(program);
-
-  glGetProgramiv(program, GL_LINK_STATUS, &success);
-  if (!success) {
-    char info_log[512];
-    glGetProgramInfoLog(program, 512, nullptr, info_log);
-    std::cerr << "ERROR::PROGRAM::COMPILATION_FAILED\n" << info_log << "\n";
-
-    glfwTerminate();
-    return -1;
-  }
-
-  glDeleteShader(vertex_shader);
-  glDeleteShader(fragment_shader);
+  Program program("shaders/vertex.glsl", "shaders/fragment.glsl");
 
   // Setup vertex data
   // --------------------------------------------
@@ -131,11 +84,11 @@ int main() {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-  unsigned loc = glGetAttribLocation(program, "aPos");
+  unsigned loc = glGetAttribLocation(program.id(), "aPos");
   glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0); // NOLINT(*-use-nullptr)
   glEnableVertexAttribArray(loc);
 
-  loc = glGetAttribLocation(program, "aColor");
+  loc = glGetAttribLocation(program.id(), "aColor");
   glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
   glEnableVertexAttribArray(loc);
 
@@ -143,8 +96,6 @@ int main() {
   glBindVertexArray(0);
 
 //  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-  int color_location = glGetUniformLocation(program, "color");
 
   // Rendering loop
   // --------------------------------------------
@@ -155,12 +106,7 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    auto time = (float) glfwGetTime();
-    float green = 0.5f + 0.5f * sinf(time);
-
-    glUseProgram(program);
-    glUniform3f(color_location, 0.0f, green, 0.0f);
-
+    glUseProgram(program.id());
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

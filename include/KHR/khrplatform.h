@@ -66,10 +66,10 @@
  *    khronos_utime_nanoseconds_t unsigned time interval or absolute time in
  *                                         nanoseconds
  *    khronos_stime_nanoseconds_t signed time interval in nanoseconds
- *    khronos_boolean_enum_t      enumerated boolean type. This should
- *      only be used as a base type when a client API's boolean type is
- *      an enum. Client APIs which use an integer or other type for
- *      booleans cannot use this as the base type for their boolean.
+ *    khronos_boolean_enum_t      enumerated boolean _type. This should
+ *      only be used as a base _type when a client API's boolean _type is
+ *      an enum. Client APIs which use an integer or other _type for
+ *      booleans cannot use this as the base _type for their boolean.
  *
  * Tokens defined in khrplatform.h:
  *
@@ -97,11 +97,11 @@
 /*-------------------------------------------------------------------------
  * Definition of KHRONOS_APICALL
  *-------------------------------------------------------------------------
- * This precedes the return type of the function in the function prototype.
+ * This precedes the return _type of the function in the function prototype.
  */
 #if defined(KHRONOS_STATIC)
-    /* If the preprocessor constant KHRONOS_STATIC is defined, make the
-     * header compatible with static linking. */
+/* If the preprocessor constant KHRONOS_STATIC is defined, make the
+ * header compatible with static linking. */
 #   define KHRONOS_APICALL
 #elif defined(_WIN32)
 #   define KHRONOS_APICALL __declspec(dllimport)
@@ -116,11 +116,11 @@
 /*-------------------------------------------------------------------------
  * Definition of KHRONOS_APIENTRY
  *-------------------------------------------------------------------------
- * This follows the return type of the function  and precedes the function
+ * This follows the return _type of the function  and precedes the function
  * name in the function prototype.
  */
 #if defined(_WIN32) && !defined(_WIN32_WCE) && !defined(__SCITECH_SNAP__)
-    /* Win32 but not WinCE */
+/* Win32 but not WinCE */
 #   define KHRONOS_APIENTRY __stdcall
 #else
 #   define KHRONOS_APIENTRY
@@ -138,7 +138,7 @@
 #endif
 
 /*-------------------------------------------------------------------------
- * basic type definitions
+ * basic _type definitions
  *-----------------------------------------------------------------------*/
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || defined(__GNUC__) || defined(__SCO__) || defined(__USLC__)
 
@@ -147,10 +147,11 @@
  * Using <stdint.h>
  */
 #include <stdint.h>
-typedef int32_t                 khronos_int32_t;
-typedef uint32_t                khronos_uint32_t;
-typedef int64_t                 khronos_int64_t;
-typedef uint64_t                khronos_uint64_t;
+
+typedef int32_t khronos_int32_t;
+typedef uint32_t khronos_uint32_t;
+typedef int64_t khronos_int64_t;
+typedef uint64_t khronos_uint64_t;
 #define KHRONOS_SUPPORT_INT64   1
 #define KHRONOS_SUPPORT_FLOAT   1
 /*
@@ -239,10 +240,10 @@ typedef uint64_t                khronos_uint64_t;
 /*
  * Types that are (so far) the same on all platforms
  */
-typedef signed   char          khronos_int8_t;
-typedef unsigned char          khronos_uint8_t;
-typedef signed   short int     khronos_int16_t;
-typedef unsigned short int     khronos_uint16_t;
+typedef signed char khronos_int8_t;
+typedef unsigned char khronos_uint8_t;
+typedef signed short int khronos_int16_t;
+typedef unsigned short int khronos_uint16_t;
 
 /*
  * Types that differ between LLP64 and LP64 architectures - in LLP64,
@@ -256,23 +257,23 @@ typedef uintptr_t              khronos_uintptr_t;
 typedef signed   long long int khronos_intptr_t;
 typedef unsigned long long int khronos_uintptr_t;
 #else
-typedef signed   long  int     khronos_intptr_t;
-typedef unsigned long  int     khronos_uintptr_t;
+typedef signed long int khronos_intptr_t;
+typedef unsigned long int khronos_uintptr_t;
 #endif
 
 #if defined(_WIN64)
 typedef signed   long long int khronos_ssize_t;
 typedef unsigned long long int khronos_usize_t;
 #else
-typedef signed   long  int     khronos_ssize_t;
-typedef unsigned long  int     khronos_usize_t;
+typedef signed long int khronos_ssize_t;
+typedef unsigned long int khronos_usize_t;
 #endif
 
 #if KHRONOS_SUPPORT_FLOAT
 /*
- * Float type
+ * Float _type
  */
-typedef          float         khronos_float_t;
+typedef float khronos_float_t;
 #endif
 
 #if KHRONOS_SUPPORT_INT64
@@ -285,8 +286,8 @@ typedef          float         khronos_float_t;
  * 64 bit value that wraps back to 0 every 584 years.  Time intervals
  * may be either signed or unsigned.
  */
-typedef khronos_uint64_t       khronos_utime_nanoseconds_t;
-typedef khronos_int64_t        khronos_stime_nanoseconds_t;
+typedef khronos_uint64_t khronos_utime_nanoseconds_t;
+typedef khronos_int64_t khronos_stime_nanoseconds_t;
 #endif
 
 /*
@@ -297,15 +298,15 @@ typedef khronos_int64_t        khronos_stime_nanoseconds_t;
 #endif
 
 /*
- * Enumerated boolean type
+ * Enumerated boolean _type
  *
  * Values other than zero should be considered to be true.  Therefore
  * comparisons should not be made against KHRONOS_TRUE.
  */
 typedef enum {
-    KHRONOS_FALSE = 0,
-    KHRONOS_TRUE  = 1,
-    KHRONOS_BOOLEAN_ENUM_FORCE_SIZE = KHRONOS_MAX_ENUM
+  KHRONOS_FALSE = 0,
+  KHRONOS_TRUE = 1,
+  KHRONOS_BOOLEAN_ENUM_FORCE_SIZE = KHRONOS_MAX_ENUM
 } khronos_boolean_enum_t;
 
 #endif /* __khrplatform_h_ */
