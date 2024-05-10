@@ -1,6 +1,5 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <stb/stb_image.h>
 
 #include <iostream>
 #include <cmath>
@@ -11,8 +10,25 @@
 #define WIDTH 800
 #define HEIGHT 600
 
+float ratio = 0.2f;
+
 void framebuffer_size_callback(GLFWwindow *win, int width, int height) {
   glViewport(0, 0, width, height);
+}
+
+void key_callback(GLFWwindow *win, int key, int scancode, int action, int mods) {
+  if (action != GLFW_PRESS) return;
+
+  switch (key) {
+    case GLFW_KEY_UP:
+      ratio = fminf(ratio + 0.1f, 1.0f);
+      break;
+    case GLFW_KEY_DOWN:
+      ratio = fmaxf(ratio - 0.1f, 0.0f);
+      break;
+    default:
+      break;
+  }
 }
 
 void process_input(GLFWwindow *window) {
@@ -50,6 +66,8 @@ int main() {
   // Init viewport
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+  glfwSetKeyCallback(window, key_callback);
 
   // Compile shaders and link program
   // --------------------------------------------
@@ -110,6 +128,7 @@ int main() {
   program.use();
   glUniform1i(program.uniform_location("texture1"), 0);
   glUniform1i(program.uniform_location("texture2"), 1);
+  glUniform1f(program.uniform_location("ratio"), ratio);
 
 //  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -123,6 +142,7 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     program.use();
+    glUniform1f(program.uniform_location("ratio"), ratio);
     tex_container.bind(0);
     tex_awesome.bind(1);
 

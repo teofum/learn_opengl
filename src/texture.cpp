@@ -48,8 +48,13 @@ Texture::Texture(
   : Texture(img_path, format, wrap_mode, wrap_mode, min_filter, mag_filter, gen_mipmaps) {
 }
 
+Texture::Texture(const char *img_path, GLenum format, GLint wrap_mode)
+  : Texture(img_path, format, wrap_mode, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, true) {
+
+}
+
 Texture::Texture(const char *img_path, GLenum format)
-  : Texture(img_path, format, GL_REPEAT, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, true) {
+  : Texture(img_path, format, GL_REPEAT) {
 }
 
 Texture::~Texture() {

@@ -19,6 +19,8 @@ public:
 
   Texture(const char *img_path, GLenum format, GLint wrap_mode, GLint min_filter, GLint mag_filter, bool gen_mipmaps);
 
+  Texture(const char *img_path, GLenum format, GLint wrap_mode);
+
   explicit Texture(const char *img_path, GLenum format = GL_RGB);
 
   ~Texture();
