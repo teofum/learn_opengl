@@ -1,5 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
 #include <cmath>
@@ -9,6 +12,8 @@
 
 #define WIDTH 800
 #define HEIGHT 600
+
+using namespace glm;
 
 float ratio = 0.2f;
 
@@ -130,7 +135,14 @@ int main() {
   glUniform1i(program.uniform_location("texture2"), 1);
   glUniform1f(program.uniform_location("ratio"), ratio);
 
-//  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  // Transforms
+  // --------------------------------------------
+  mat4 transform = mat4(1.0);
+  transform = rotate(transform, radians(90.0f), vec3(0.0, 0.0, 1.0));
+  transform = scale(transform, vec3(0.5));
+
+  loc = program.uniform_location("transform");
+  glUniformMatrix4fv((int) loc, 1, GL_FALSE, value_ptr(transform));
 
   // Rendering loop
   // --------------------------------------------
