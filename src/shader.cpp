@@ -1,4 +1,4 @@
-#include "shader.h"
+#include <shader.h>
 
 unsigned compile_shader(GLenum type, const char *src, int *success) {
   unsigned shader = glCreateShader(type);
@@ -13,6 +13,6 @@ unsigned compile_shader(GLenum type, const char *src, int *success) {
               << (type == GL_FRAGMENT_SHADER ? "FRAGMENT" : "VERTEX")
               << "::COMPILATION_FAILED\n" << info_log << "\n";
   }
-  
+
   return shader;
 }

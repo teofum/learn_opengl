@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "shader.h"
+#include <shader.h>
 
 #define WIDTH 800
 #define HEIGHT 600

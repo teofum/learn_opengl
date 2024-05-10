@@ -9,7 +9,7 @@ include_directories(/opt/homebrew/Cellar/glfw/3.4/include)
 link_directories(/opt/homebrew/Cellar/glfw/3.4/lib)
 
 add_executable(learn_opengl
-        main.cpp
+        src/main.cpp
         glad/glad.c
-        shader.cpp)
+        src/shader.cpp)
 target_link_libraries(learn_opengl glfw)
