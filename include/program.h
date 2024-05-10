@@ -31,6 +31,10 @@ public:
   bool ready() const;
 
   void use() const;
+
+  int uniform_location(const char *name) const;
+
+  unsigned attrib_location(const char *name) const;
 };
 
 #endif //LEARN_OPENGL_PROGRAM_H

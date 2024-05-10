@@ -48,3 +48,11 @@ void Program::use() const {
   glUseProgram(_id);
 }
 
+int Program::uniform_location(const char *name) const {
+  return glGetUniformLocation(_id, name);
+}
+
+unsigned Program::attrib_location(const char *name) const {
+  return glGetAttribLocation(_id, name);
+}
+

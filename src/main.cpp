@@ -1,10 +1,12 @@
-#include <iostream>
-#include <cmath>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb/stb_image.h>
 
-#include <shader.h>
+#include <iostream>
+#include <cmath>
+
 #include <program.h>
+#include <texture.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -56,15 +58,21 @@ int main() {
   // Setup vertex data
   // --------------------------------------------
   float vertices[] = {
-    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
+    // Positions        // Color          // Tex coords
+    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, //
+    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, //
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, //
+    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, //
   };
   unsigned indices[] = {
     0, 1, 3,
     1, 2, 3,
   };
+
+  // Load tex_container image and generate texture
+  // --------------------------------------------
+  Texture tex_container("assets/container.jpg");
+  Texture tex_awesome("assets/awesome_face.png", GL_RGBA);
 
   // Setup buffers
   // --------------------------------------------
@@ -84,16 +92,24 @@ int main() {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-  unsigned loc = glGetAttribLocation(program.id(), "aPos");
-  glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0); // NOLINT(*-use-nullptr)
+  unsigned loc = program.attrib_location("aPos");
+  glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0); // NOLINT(*-use-nullptr)
   glEnableVertexAttribArray(loc);
 
-  loc = glGetAttribLocation(program.id(), "aColor");
-  glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (3 * sizeof(float)));
+  loc = program.attrib_location("aColor");
+  glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
+  glEnableVertexAttribArray(loc);
+
+  loc = program.attrib_location("aTexCoord");
+  glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
   glEnableVertexAttribArray(loc);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
+
+  program.use();
+  glUniform1i(program.uniform_location("texture1"), 0);
+  glUniform1i(program.uniform_location("texture2"), 1);
 
 //  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -106,7 +122,10 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(program.id());
+    program.use();
+    tex_container.bind(0);
+    tex_awesome.bind(1);
+
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);

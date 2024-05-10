@@ -11,6 +11,8 @@ link_directories(/opt/homebrew/Cellar/glfw/3.4/lib)
 add_executable(learn_opengl
         src/main.cpp
         glad/glad.c
+        stb/stb_image.cpp
         src/shader.cpp
-        src/program.cpp)
+        src/program.cpp
+        src/texture.cpp)
 target_link_libraries(learn_opengl glfw)
