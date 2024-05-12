@@ -10,6 +10,7 @@
 #include <program.h>
 #include <texture.h>
 #include <object.h>
+#include <instance.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -84,7 +85,9 @@ int main() {
 
   // Setup vertex data
   // --------------------------------------------
-  Object sphere("assets/monkey.obj", program);
+  Object obj("assets/monkey.obj", program);
+  Instance instance(obj, program);
+  Instance instance2(obj, program);
 
   // Load tex_container image and generate texture
   // --------------------------------------------
@@ -112,11 +115,6 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    mat4 model = mat4(1.0f);
-    model = rotate(model, radians(50.0f) * (float) glfwGetTime(), vec3(0.5f, 1.0f, 0.0f));
-    int loc_model = program.uniform_location("model");
-    glUniformMatrix4fv(loc_model, 1, GL_FALSE, value_ptr(model));
-
     glfwGetFramebufferSize(window, &width, &height);
     mat4 projection = perspective(radians(45.0f), (float) width / (float) height, 0.1f, 100.0f);
     int loc_projection = program.uniform_location("projection");
@@ -127,7 +125,15 @@ int main() {
     tex_container.bind(0);
     tex_awesome.bind(1);
 
-    sphere.draw();
+    instance.transform = translate(mat4(1.0), vec3(0.75, 0.0, 0.0));
+    instance.transform = rotate(instance.transform, radians(50.0f) * (float) glfwGetTime(), vec3(0.5f, 1.0f, 0.0f));
+    instance.transform = scale(instance.transform, vec3(0.5f));
+    instance.draw();
+
+    instance2.transform = translate(mat4(1.0), vec3(-0.75, 0.0, 0.0));
+    instance2.transform = scale(instance2.transform, vec3(0.5f));
+    instance2.transform = rotate(instance2.transform, radians(-50.0f) * (float) glfwGetTime(), vec3(0.5f, 1.0f, 0.0f));
+    instance2.draw();
 
     glfwSwapBuffers(window);
     glfwPollEvents();

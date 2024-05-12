@@ -22,5 +22,6 @@ add_executable(learn_opengl
         src/shader.cpp
         src/program.cpp
         src/texture.cpp
-        src/object.cpp)
+        src/object.cpp
+        src/instance.cpp)
 target_link_libraries(learn_opengl glfw)
