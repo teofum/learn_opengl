@@ -9,6 +9,7 @@
 
 #include <program.h>
 #include <texture.h>
+#include <object.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -75,6 +76,7 @@ int main() {
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
   glfwSetKeyCallback(window, key_callback);
+  glEnable(GL_DEPTH_TEST);
 
   // Compile shaders and link program
   // --------------------------------------------
@@ -82,55 +84,12 @@ int main() {
 
   // Setup vertex data
   // --------------------------------------------
-  float vertices[] = {
-    // Positions        // Color          // Tex coords
-    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, //
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, //
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, //
-    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, //
-  };
-  unsigned indices[] = {
-    0, 1, 3,
-    1, 2, 3,
-  };
+  Object sphere("assets/monkey.obj", program);
 
   // Load tex_container image and generate texture
   // --------------------------------------------
   Texture tex_container("assets/container.jpg");
   Texture tex_awesome("assets/awesome_face.png", GL_RGBA);
-
-  // Setup buffers
-  // --------------------------------------------
-  unsigned vao, vbo, ebo;
-
-  // Vertex Array Object
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-
-  // Vertex Buffer Object
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  // Element Buffer Object
-  glGenBuffers(1, &ebo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-  unsigned loc = program.attrib_location("aPos");
-  glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0); // NOLINT(*-use-nullptr)
-  glEnableVertexAttribArray(loc);
-
-  loc = program.attrib_location("aColor");
-  glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
-  glEnableVertexAttribArray(loc);
-
-  loc = program.attrib_location("aTexCoord");
-  glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
-  glEnableVertexAttribArray(loc);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindVertexArray(0);
 
   program.use();
   glUniform1i(program.uniform_location("texture1"), 0);
@@ -139,14 +98,8 @@ int main() {
 
   // Transforms
   // --------------------------------------------
-  mat4 model = mat4(1.0f);
-  model = rotate(model, radians(-55.0f), vec3(1.0f, 0.0f, 0.0f));
-
   mat4 view = mat4(1.0f);
   view = translate(view, vec3(0.0f, 0.0f, -3.0f));
-
-  int loc_model = program.uniform_location("model");
-  glUniformMatrix4fv(loc_model, 1, GL_FALSE, value_ptr(model));
   int loc_view = program.uniform_location("view");
   glUniformMatrix4fv(loc_view, 1, GL_FALSE, value_ptr(view));
 
@@ -157,11 +110,15 @@ int main() {
 
     // Rendering code
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    mat4 model = mat4(1.0f);
+    model = rotate(model, radians(50.0f) * (float) glfwGetTime(), vec3(0.5f, 1.0f, 0.0f));
+    int loc_model = program.uniform_location("model");
+    glUniformMatrix4fv(loc_model, 1, GL_FALSE, value_ptr(model));
 
     glfwGetFramebufferSize(window, &width, &height);
     mat4 projection = perspective(radians(45.0f), (float) width / (float) height, 0.1f, 100.0f);
-
     int loc_projection = program.uniform_location("projection");
     glUniformMatrix4fv(loc_projection, 1, GL_FALSE, value_ptr(projection));
 
@@ -170,9 +127,7 @@ int main() {
     tex_container.bind(0);
     tex_awesome.bind(1);
 
-    glBindVertexArray(vao);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    sphere.draw();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
