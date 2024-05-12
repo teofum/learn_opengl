@@ -69,7 +69,9 @@ int main() {
   }
 
   // Init viewport
-  glViewport(0, 0, WIDTH, HEIGHT);
+  int width, height;
+  glfwGetFramebufferSize(window, &width, &height);
+  glViewport(0, 0, width, height);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
   glfwSetKeyCallback(window, key_callback);
@@ -137,12 +139,16 @@ int main() {
 
   // Transforms
   // --------------------------------------------
-  mat4 transform = mat4(1.0);
-  transform = rotate(transform, radians(90.0f), vec3(0.0, 0.0, 1.0));
-  transform = scale(transform, vec3(0.5));
+  mat4 model = mat4(1.0f);
+  model = rotate(model, radians(-55.0f), vec3(1.0f, 0.0f, 0.0f));
 
-  loc = program.uniform_location("transform");
-  glUniformMatrix4fv((int) loc, 1, GL_FALSE, value_ptr(transform));
+  mat4 view = mat4(1.0f);
+  view = translate(view, vec3(0.0f, 0.0f, -3.0f));
+
+  int loc_model = program.uniform_location("model");
+  glUniformMatrix4fv(loc_model, 1, GL_FALSE, value_ptr(model));
+  int loc_view = program.uniform_location("view");
+  glUniformMatrix4fv(loc_view, 1, GL_FALSE, value_ptr(view));
 
   // Rendering loop
   // --------------------------------------------
@@ -152,6 +158,12 @@ int main() {
     // Rendering code
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glfwGetFramebufferSize(window, &width, &height);
+    mat4 projection = perspective(radians(45.0f), (float) width / (float) height, 0.1f, 100.0f);
+
+    int loc_projection = program.uniform_location("projection");
+    glUniformMatrix4fv(loc_projection, 1, GL_FALSE, value_ptr(projection));
 
     program.use();
     glUniform1f(program.uniform_location("ratio"), ratio);

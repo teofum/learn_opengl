@@ -50,7 +50,6 @@ Texture::Texture(
 
 Texture::Texture(const char *img_path, GLenum format, GLint wrap_mode)
   : Texture(img_path, format, wrap_mode, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, true) {
-
 }
 
 Texture::Texture(const char *img_path, GLenum format)
