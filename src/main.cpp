@@ -11,6 +11,7 @@
 #include <texture.h>
 #include <object.h>
 #include <instance.h>
+#include <camera.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -18,6 +19,10 @@
 using namespace glm;
 
 float ratio = 0.2f;
+
+Camera camera;
+float delta_time = 0.0f;
+float last_frame = 0.0f;
 
 void framebuffer_size_callback(GLFWwindow *win, int width, int height) {
   glViewport(0, 0, width, height);
@@ -27,10 +32,10 @@ void key_callback(GLFWwindow *win, int key, int scancode, int action, int mods) 
   if (action != GLFW_PRESS) return;
 
   switch (key) {
-    case GLFW_KEY_UP:
+    case GLFW_KEY_X:
       ratio = fminf(ratio + 0.1f, 1.0f);
       break;
-    case GLFW_KEY_DOWN:
+    case GLFW_KEY_Z:
       ratio = fmaxf(ratio - 0.1f, 0.0f);
       break;
     default:
@@ -38,10 +43,20 @@ void key_callback(GLFWwindow *win, int key, int scancode, int action, int mods) 
   }
 }
 
+void mouse_callback(GLFWwindow *window, double x_pos, double y_pos) {
+  camera.process_mouse_input(x_pos, y_pos);
+}
+
+void scroll_callback(GLFWwindow *window, double x_offset, double y_offset) {
+  camera.process_scroll_input(y_offset);
+}
+
 void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, true);
   }
+
+  camera.process_keyboard_input(window, delta_time);
 }
 
 int main() {
@@ -76,7 +91,11 @@ int main() {
   glViewport(0, 0, width, height);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glfwSetKeyCallback(window, key_callback);
+  glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetScrollCallback(window, scroll_callback);
+
   glEnable(GL_DEPTH_TEST);
 
   // Compile shaders and link program
@@ -99,24 +118,25 @@ int main() {
   glUniform1i(program.uniform_location("texture2"), 1);
   glUniform1f(program.uniform_location("ratio"), ratio);
 
-  // Transforms
-  // --------------------------------------------
-  mat4 view = mat4(1.0f);
-  view = translate(view, vec3(0.0f, 0.0f, -3.0f));
-  int loc_view = program.uniform_location("view");
-  glUniformMatrix4fv(loc_view, 1, GL_FALSE, value_ptr(view));
-
   // Rendering loop
   // --------------------------------------------
   while (!glfwWindowShouldClose(window)) {
+    float current_frame = (float) glfwGetTime();
+    delta_time = current_frame - last_frame;
+    last_frame = current_frame;
+
     process_input(window);
 
     // Rendering code
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    mat4 view = camera.get_view_matrix();
+    int loc_view = program.uniform_location("view");
+    glUniformMatrix4fv(loc_view, 1, GL_FALSE, value_ptr(view));
+
     glfwGetFramebufferSize(window, &width, &height);
-    mat4 projection = perspective(radians(45.0f), (float) width / (float) height, 0.1f, 100.0f);
+    mat4 projection = camera.get_projection_matrix((float) width / (float) height);
     int loc_projection = program.uniform_location("projection");
     glUniformMatrix4fv(loc_projection, 1, GL_FALSE, value_ptr(projection));
 

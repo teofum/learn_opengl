@@ -23,5 +23,7 @@ add_executable(learn_opengl
         src/program.cpp
         src/texture.cpp
         src/object.cpp
-        src/instance.cpp)
+        src/instance.cpp
+        src/camera.cpp
+        include/camera.h)
 target_link_libraries(learn_opengl glfw)
