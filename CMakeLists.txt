@@ -15,8 +15,8 @@ link_directories(/opt/homebrew/Cellar/glfw/3.4/lib)
 include_directories(/opt/homebrew/Cellar/glm/1.0.1/include)
 link_directories(/opt/homebrew/Cellar/glm/1.0.1/lib)
 
-add_executable(learn_opengl
-        src/main.cpp
+add_executable(basics
+        src/01-basics.cpp
         glad/glad.c
         stb/stb_image.cpp
         src/shader.cpp
@@ -25,5 +25,18 @@ add_executable(learn_opengl
         src/object.cpp
         src/instance.cpp
         src/camera.cpp
-        include/camera.h)
-target_link_libraries(learn_opengl glfw)
+        src/window.cpp)
+target_link_libraries(basics glfw)
+
+add_executable(lighting
+        src/02-lighting.cpp
+        glad/glad.c
+        stb/stb_image.cpp
+        src/shader.cpp
+        src/program.cpp
+        src/texture.cpp
+        src/object.cpp
+        src/instance.cpp
+        src/camera.cpp
+        src/window.cpp)
+target_link_libraries(lighting glfw)

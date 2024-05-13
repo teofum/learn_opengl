@@ -4,7 +4,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <iostream>
 #include <cmath>
 
 #include <program.h>
@@ -12,6 +11,7 @@
 #include <object.h>
 #include <instance.h>
 #include <camera.h>
+#include <window.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -24,11 +24,13 @@ Camera camera;
 float delta_time = 0.0f;
 float last_frame = 0.0f;
 
-void framebuffer_size_callback(GLFWwindow *win, int width, int height) {
-  glViewport(0, 0, width, height);
-}
-
-void key_callback(GLFWwindow *win, int key, int scancode, int action, int mods) {
+void key_callback(
+  [[maybe_unused]] GLFWwindow *win,
+  int key,
+  [[maybe_unused]] int scancode,
+  int action,
+  [[maybe_unused]] int mods
+) {
   if (action != GLFW_PRESS) return;
 
   switch (key) {
@@ -43,11 +45,11 @@ void key_callback(GLFWwindow *win, int key, int scancode, int action, int mods) 
   }
 }
 
-void mouse_callback(GLFWwindow *window, double x_pos, double y_pos) {
+void mouse_callback([[maybe_unused]] GLFWwindow *window, double x_pos, double y_pos) {
   camera.process_mouse_input(x_pos, y_pos);
 }
 
-void scroll_callback(GLFWwindow *window, double x_offset, double y_offset) {
+void scroll_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double x_offset, double y_offset) {
   camera.process_scroll_input(y_offset);
 }
 
@@ -60,47 +62,14 @@ void process_input(GLFWwindow *window) {
 }
 
 int main() {
-  glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-  // Create GLFW window
-  GLFWwindow *window = glfwCreateWindow(
-    WIDTH, HEIGHT, "Learn OpenGL",
-    nullptr, nullptr
-  );
-  if (!window) {
-    std::cerr << "Failed to create GLFW window\n";
-    glfwTerminate();
-    return -1;
-  }
-  glfwMakeContextCurrent(window);
-
-  // Initialize GLAD
-  if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-    std::cerr << "Failed to initialize GLAD\n";
-    glfwTerminate();
-    return -1;
-  }
-
-  // Init viewport
-  int width, height;
-  glfwGetFramebufferSize(window, &width, &height);
-  glViewport(0, 0, width, height);
-  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 01 — Basics");
   glfwSetKeyCallback(window, key_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 
-  glEnable(GL_DEPTH_TEST);
-
   // Compile shaders and link program
   // --------------------------------------------
-  Program program("shaders/vertex.glsl", "shaders/fragment.glsl");
+  Program program("shaders/basics/vertex.glsl", "shaders/basics/fragment.glsl");
 
   // Setup vertex data
   // --------------------------------------------
@@ -120,6 +89,7 @@ int main() {
 
   // Rendering loop
   // --------------------------------------------
+  int width, height;
   while (!glfwWindowShouldClose(window)) {
     float current_frame = (float) glfwGetTime();
     delta_time = current_frame - last_frame;
