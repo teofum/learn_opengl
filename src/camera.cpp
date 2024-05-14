@@ -1,7 +1,7 @@
 #include <camera.h>
 
 mat4 Camera::get_view_matrix() const {
-  return lookAt(position, position + camera_forward, up);
+  return lookAt(position, position + forward, up);
 }
 
 mat4 Camera::get_projection_matrix(float aspect) const {
@@ -16,10 +16,10 @@ void Camera::process_mouse_input(double x_pos, double y_pos) {
     angles += delta;
     angles.y = clamp(angles.y, -89.0f, 89.0f);
 
-    camera_forward.x = cos(radians(angles.x)) * cos(radians(angles.y));
-    camera_forward.y = sin(radians(angles.y));
-    camera_forward.z = sin(radians(angles.x)) * cos(radians(angles.y));
-    camera_forward = normalize(camera_forward);
+    forward.x = cos(radians(angles.x)) * cos(radians(angles.y));
+    forward.y = sin(radians(angles.y));
+    forward.z = sin(radians(angles.x)) * cos(radians(angles.y));
+    forward = normalize(forward);
   }
 
   last_frame_cursor = cursor;
@@ -34,13 +34,13 @@ void Camera::process_keyboard_input(GLFWwindow *window, float delta_time) {
   float speed = camera_speed * delta_time;
 
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    position += camera_forward * speed;
+    position += forward * speed;
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    position -= camera_forward * speed;
+    position -= forward * speed;
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    position -= normalize(cross(camera_forward, up)) * speed;
+    position -= normalize(cross(forward, up)) * speed;
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    position += normalize(cross(camera_forward, up)) * speed;
+    position += normalize(cross(forward, up)) * speed;
 }
 
 void Camera::add_program(Program *program) {

@@ -15,13 +15,13 @@ using namespace glm;
 
 class Camera {
 private:
-  vec3 camera_forward = vec3(0.0f, 0.0f, -1.0f);
   vec2 last_frame_cursor = vec2(0.0, 0.0);
   bool mouse_moved = false;
   std::vector<Program *> programs;
 
 public:
   vec3 position;
+  vec3 forward = vec3(0.0f, 0.0f, -1.0f);
   vec3 up = vec3(0.0f, 1.0f, 0.0f);
   vec2 angles;
   float fov;

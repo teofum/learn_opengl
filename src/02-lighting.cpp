@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <random>
+
 #include <program.h>
 #include <object.h>
 #include <instance.h>
@@ -57,7 +59,18 @@ int main() {
   // Setup objects
   // --------------------------------------------
   Object cube_obj("assets/cube.obj", cube_program);
-  Instance cube(cube_obj, cube_program);
+  std::vector<Instance> cubes;
+
+  std::random_device r;
+  std::default_random_engine e1(r());
+  std::uniform_real_distribution<float> rnd(-1.0f, 1.0f);
+
+  for (int i = 0; i < 100; i++) {
+    Instance cube(cube_obj, cube_program);
+    cube.transform = translate(cube.transform, 5.0f * vec3(rnd(e1), rnd(e1), -0.5f - 0.5f * rnd(e1)));
+    cube.transform = rotate(cube.transform, radians(360.0f * rnd(e1)), vec3(rnd(e1), rnd(e1), rnd(e1)));
+    cubes.push_back(cube);
+  }
 
   Object light_obj("assets/sphere.obj", light_program);
   Instance light(light_obj, light_program);
@@ -67,22 +80,26 @@ int main() {
 
   // Setup uniforms
   // --------------------------------------------
-  vec3 light_pos(1.2f, 1.0f, 1.0f);
+//  vec3 light_pos(1.2f, 1.0f, 1.0f);
   vec3 light_color(1.0f);
   vec3 ambient = light_color * 0.1f;
 
   cube_program.use();
-  glUniform3f(cube_program.uniform_location("light.position"), light_pos.x, light_pos.y, light_pos.z);
+  glUniform1f(cube_program.uniform_location("light.innerAngle"), cos(radians(12.5f)));
+  glUniform1f(cube_program.uniform_location("light.outerAngle"), cos(radians(15.0f)));
   glUniform3f(cube_program.uniform_location("light.ambient"), ambient.x, ambient.y, ambient.z);
   glUniform3f(cube_program.uniform_location("light.diffuse"), light_color.x, light_color.y, light_color.z);
   glUniform3f(cube_program.uniform_location("light.specular"), light_color.x, light_color.y, light_color.z);
+  glUniform1f(cube_program.uniform_location("light.attConst"), 1.0f);
+  glUniform1f(cube_program.uniform_location("light.attLinear"), 0.045f);
+  glUniform1f(cube_program.uniform_location("light.attQuad"), 0.015f);
 
   glUniform1i(cube_program.uniform_location("material.diffuse"), 0);
   glUniform1i(cube_program.uniform_location("material.specular"), 1);
   glUniform1f(cube_program.uniform_location("material.shininess"), 32.0f);
 
-  light.transform = translate(mat4(1.0), light_pos);
-  light.transform = scale(light.transform, vec3(0.1));
+//  light.transform = translate(mat4(1.0), light_pos);
+//  light.transform = scale(light.transform, vec3(0.1));
 
   // Rendering loop
   // --------------------------------------------
@@ -95,19 +112,29 @@ int main() {
     process_input(window);
 
     // Rendering code
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glfwGetFramebufferSize(window, &width, &height);
     camera.update_matrices((float) width / (float) height);
 
     cube_program.use();
+    glUniform3f(
+      cube_program.uniform_location("light.position"),
+      camera.position.x,
+      camera.position.y,
+      camera.position.z
+    );
+    glUniform3f(cube_program.uniform_location("light.direction"), camera.forward.x, camera.forward.y, camera.forward.z);
     glUniform3f(cube_program.uniform_location("viewPos"), camera.position.x, camera.position.y, camera.position.z);
 
     container.bind(0);
     container_spec.bind(1);
-    cube.draw();
-    light.draw();
+//    light.draw();
+
+    for (const auto &cube: cubes) {
+      cube.draw();
+    }
 
     glfwSwapBuffers(window);
     glfwPollEvents();
