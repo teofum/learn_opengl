@@ -8,6 +8,7 @@
 #include <instance.h>
 #include <camera.h>
 #include <window.h>
+#include <texture.h>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -55,28 +56,33 @@ int main() {
 
   // Setup objects
   // --------------------------------------------
-  Object cube_obj("assets/monkey.obj", cube_program);
+  Object cube_obj("assets/cube.obj", cube_program);
   Instance cube(cube_obj, cube_program);
 
   Object light_obj("assets/sphere.obj", light_program);
   Instance light(light_obj, light_program);
 
+  Texture container("assets/container2.png", GL_RGBA);
+  Texture container_spec("assets/container2_spec.png", GL_RGBA);
+
   // Setup uniforms
   // --------------------------------------------
   vec3 light_pos(1.2f, 1.0f, 1.0f);
-  vec3 light_color;
+  vec3 light_color(1.0f);
+  vec3 ambient = light_color * 0.1f;
 
   cube_program.use();
   glUniform3f(cube_program.uniform_location("light.position"), light_pos.x, light_pos.y, light_pos.z);
-  glUniform3f(cube_program.uniform_location("material.ambient"), 1.0f, 0.5f, 0.31f);
-  glUniform3f(cube_program.uniform_location("material.diffuse"), 1.0f, 0.5f, 0.31f);
-  glUniform3f(cube_program.uniform_location("material.specular"), 0.5f, 0.5f, 0.5f);
+  glUniform3f(cube_program.uniform_location("light.ambient"), ambient.x, ambient.y, ambient.z);
+  glUniform3f(cube_program.uniform_location("light.diffuse"), light_color.x, light_color.y, light_color.z);
+  glUniform3f(cube_program.uniform_location("light.specular"), light_color.x, light_color.y, light_color.z);
+
+  glUniform1i(cube_program.uniform_location("material.diffuse"), 0);
+  glUniform1i(cube_program.uniform_location("material.specular"), 1);
   glUniform1f(cube_program.uniform_location("material.shininess"), 32.0f);
 
   light.transform = translate(mat4(1.0), light_pos);
   light.transform = scale(light.transform, vec3(0.1));
-
-  cube.transform = scale(mat4(1.0), vec3(0.5));
 
   // Rendering loop
   // --------------------------------------------
@@ -98,15 +104,8 @@ int main() {
     cube_program.use();
     glUniform3f(cube_program.uniform_location("viewPos"), camera.position.x, camera.position.y, camera.position.z);
 
-    light_color.x = 0.5 + 0.5 * sin((float) glfwGetTime() * 2.0f);
-    light_color.y = 0.5 + 0.5 * sin((float) glfwGetTime() * 0.7f);
-    light_color.z = 0.5 + 0.5 * sin((float) glfwGetTime() * 1.3f);
-
-    vec3 ambient = light_color * 0.1f;
-    glUniform3f(cube_program.uniform_location("light.ambient"), ambient.x, ambient.y, ambient.z);
-    glUniform3f(cube_program.uniform_location("light.diffuse"), light_color.x, light_color.y, light_color.z);
-    glUniform3f(cube_program.uniform_location("light.specular"), light_color.x, light_color.y, light_color.z);
-
+    container.bind(0);
+    container_spec.bind(1);
     cube.draw();
     light.draw();
 
