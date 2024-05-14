@@ -18,25 +18,62 @@ Camera camera;
 float delta_time = 0.0f;
 float last_frame = 0.0f;
 
+void mouse_callback([[maybe_unused]] GLFWwindow *window, double x_pos, double y_pos) {
+  camera.process_mouse_input(x_pos, y_pos);
+}
+
+void scroll_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double x_offset, double y_offset) {
+  camera.process_scroll_input(y_offset);
+}
+
 void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, true);
   }
+
+  camera.process_keyboard_input(window, delta_time);
 }
 
 int main() {
   GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 02 — Lighting");
+  glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetScrollCallback(window, scroll_callback);
 
-  // Compile shaders and link program
+  camera.position = vec3(0.0, 0.0, 5.0);
+
+  // Compile shaders and link cube_program
   // --------------------------------------------
-  Program program("shaders/lighting/vertex.glsl", "shaders/lighting/fragment.glsl");
+  Shader vertex_shader = Shader::vertex("shaders/lighting/vertex.glsl");
+  Shader fragment_shader = Shader::fragment("shaders/lighting/fragment.glsl");
+  Shader light_shader = Shader::fragment("shaders/lighting/light_frag.glsl");
 
-  // Setup vertex data
+  Program cube_program(vertex_shader, fragment_shader);
+  Program light_program(vertex_shader, light_shader);
+
+  camera.add_program(&cube_program);
+  camera.add_program(&light_program);
+
+  // Setup objects
   // --------------------------------------------
-  Object obj("assets/monkey.obj", program);
-  Instance instance(obj, program);
+  Object cube_obj("assets/monkey.obj", cube_program);
+  Instance cube(cube_obj, cube_program);
 
-  program.use();
+  Object light_obj("assets/sphere.obj", light_program);
+  Instance light(light_obj, light_program);
+
+  // Setup uniforms
+  // --------------------------------------------
+  vec3 light_pos(1.2f, 1.0f, 1.0f);
+
+  cube_program.use();
+  glUniform3f(cube_program.uniform_location("lightPos"), light_pos.x, light_pos.y, light_pos.z);
+  glUniform3f(cube_program.uniform_location("objectColor"), 1.0f, 0.5f, 0.31f);
+  glUniform3f(cube_program.uniform_location("lightColor"), 1.0f, 1.0f, 1.0f);
+
+  light.transform = translate(mat4(1.0), light_pos);
+  light.transform = scale(light.transform, vec3(0.1));
+
+  cube.transform = scale(mat4(1.0), vec3(0.5));
 
   // Rendering loop
   // --------------------------------------------
@@ -49,20 +86,17 @@ int main() {
     process_input(window);
 
     // Rendering code
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    mat4 view = camera.get_view_matrix();
-    int loc_view = program.uniform_location("view");
-    glUniformMatrix4fv(loc_view, 1, GL_FALSE, value_ptr(view));
-
     glfwGetFramebufferSize(window, &width, &height);
-    mat4 projection = camera.get_projection_matrix((float) width / (float) height);
-    int loc_projection = program.uniform_location("projection");
-    glUniformMatrix4fv(loc_projection, 1, GL_FALSE, value_ptr(projection));
+    camera.update_matrices((float) width / (float) height);
 
-    program.use();
-    instance.draw();
+    cube_program.use();
+    glUniform3f(cube_program.uniform_location("viewPos"), camera.position.x, camera.position.y, camera.position.z);
+
+    cube.draw();
+    light.draw();
 
     glfwSwapBuffers(window);
     glfwPollEvents();

@@ -27,13 +27,14 @@ bool operator<(const VertexIndices &lhs, const VertexIndices &rhs) {
 Object::Object(
   const char *obj_path,
   const Program &program,
-  const char *pos_name,
-  const char *normal_name,
-  const char *uv_name
+  const char *pos_attrib,
+  const char *normal_attrib,
+  const char *uv_attrib
 ) {
   vao = vbo = ebo = 0;
 
   load_obj(obj_path);
+  vertex_count = vertex_indices.size();
 
   // Vertex Array Object
   glGenVertexArrays(1, &vao);
@@ -59,15 +60,15 @@ Object::Object(
     GL_STATIC_DRAW
   );
 
-  unsigned loc = program.attrib_location(pos_name);
+  unsigned loc = program.attrib_location(pos_attrib);
   glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0); // NOLINT(*-use-nullptr)
   glEnableVertexAttribArray(loc);
 
-  loc = program.attrib_location(normal_name);
+  loc = program.attrib_location(normal_attrib);
   glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
   glEnableVertexAttribArray(loc);
 
-  loc = program.attrib_location(uv_name);
+  loc = program.attrib_location(uv_attrib);
   glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
   glEnableVertexAttribArray(loc);
 
@@ -154,7 +155,7 @@ void Object::build_vertex_data(
 
   for (const auto &face: faces) {
     for (const auto &v_indices: face) {
-      VertexIndices indices{v_indices.x, v_indices.y, v_indices.z};
+      VertexIndices indices{v_indices.x, v_indices.z, v_indices.y};
       if (indexed.contains(indices)) {
         // This vertex is already present in data buffer, simply add the index
         unsigned idx = indexed.at(indices);
@@ -163,8 +164,8 @@ void Object::build_vertex_data(
         // Vertex with this combination of indices is not in data buffer, add it
         Vertex vertex{
           vertices[v_indices.x],
-          normals[v_indices.y],
-          uvs[v_indices.z],
+          normals[v_indices.z],
+          uvs[v_indices.y],
         };
         unsigned idx = vertex_data.size();
         vertex_data.push_back(vertex);
@@ -177,8 +178,43 @@ void Object::build_vertex_data(
   }
 }
 
+Object::Object(
+  const Object &obj,
+  const Program &program,
+  const char *pos_attrib,
+  const char *normal_attrib,
+  const char *uv_attrib
+) {
+  vbo = obj.vbo;
+  ebo = obj.ebo;
+  vertex_count = obj.vertex_count;
+
+  vao = 0;
+  // Vertex Array Object
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
+  unsigned loc = program.attrib_location(pos_attrib);
+  glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0); // NOLINT(*-use-nullptr)
+  glEnableVertexAttribArray(loc);
+
+  loc = program.attrib_location(normal_attrib);
+  glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
+  glEnableVertexAttribArray(loc);
+
+  loc = program.attrib_location(uv_attrib);
+  glVertexAttribPointer(loc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
+  glEnableVertexAttribArray(loc);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+}
+
 void Object::draw() const {
   glBindVertexArray(vao);
-  glDrawElements(GL_TRIANGLES, vertex_indices.size(), GL_UNSIGNED_INT, 0); // NOLINT(*)
+  glDrawElements(GL_TRIANGLES, vertex_count, GL_UNSIGNED_INT, 0); // NOLINT(*)
   glBindVertexArray(0);
 }

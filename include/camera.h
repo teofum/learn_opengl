@@ -1,9 +1,15 @@
 #ifndef LEARN_OPENGL_CAMERA_H
 #define LEARN_OPENGL_CAMERA_H
 
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <GLFW/glfw3.h>
+
+#include <vector>
+
+#include <program.h>
 
 using namespace glm;
 
@@ -12,6 +18,7 @@ private:
   vec3 camera_forward = vec3(0.0f, 0.0f, -1.0f);
   vec2 last_frame_cursor = vec2(0.0, 0.0);
   bool mouse_moved = false;
+  std::vector<Program *> programs;
 
 public:
   vec3 position;
@@ -39,6 +46,10 @@ public:
   void process_scroll_input(double y_offset);
 
   void process_keyboard_input(GLFWwindow *window, float delta_time);
+
+  void add_program(Program *program);
+
+  void update_matrices(float aspect);
 };
 
 #endif //LEARN_OPENGL_CAMERA_H

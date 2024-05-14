@@ -21,6 +21,7 @@ struct Vertex {
 class Object {
 private:
   unsigned vao, vbo, ebo;
+  size_t vertex_count;
   std::vector<Vertex> vertex_data;
   std::vector<unsigned> vertex_indices;
 
@@ -37,12 +38,23 @@ public:
   Object(
     const char *obj_path,
     const Program &program,
+    const char *pos_attrib,
+    const char *normal_attrib,
+    const char *uv_attrib
+  );
+
+  Object(const char *obj_path, const Program &program) : Object(obj_path, program, "aPos", "aNormal", "aTexCoord") {
+  };
+
+  Object(
+    const Object &obj,
+    const Program &program,
     const char *pos_name,
     const char *normal_name,
     const char *uv_name
   );
 
-  Object(const char *obj_path, const Program &program) : Object(obj_path, program, "aPos", "aNormal", "aTexCoord") {
+  Object(const Object &obj, const Program &program) : Object(obj, program, "aPos", "aNormal", "aTexCoord") {
   };
 
   void draw() const;
