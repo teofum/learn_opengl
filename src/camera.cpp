@@ -53,9 +53,7 @@ void Camera::update_matrices(float aspect) {
 
   for (auto program: programs) {
     program->use();
-    int loc_view = program->uniform_location("view");
-    glUniformMatrix4fv(loc_view, 1, GL_FALSE, value_ptr(view));
-    int loc_projection = program->uniform_location("projection");
-    glUniformMatrix4fv(loc_projection, 1, GL_FALSE, value_ptr(projection));
+    program->set_matrix("view", view);
+    program->set_matrix("projection", projection);
   }
 }

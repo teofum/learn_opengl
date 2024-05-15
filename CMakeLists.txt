@@ -25,7 +25,8 @@ add_executable(basics
         src/object.cpp
         src/instance.cpp
         src/camera.cpp
-        src/window.cpp)
+        src/window.cpp
+        src/light.cpp)
 target_link_libraries(basics glfw)
 
 add_executable(lighting
@@ -38,5 +39,6 @@ add_executable(lighting
         src/object.cpp
         src/instance.cpp
         src/camera.cpp
-        src/window.cpp)
+        src/window.cpp
+        src/light.cpp)
 target_link_libraries(lighting glfw)

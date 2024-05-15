@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include <cmath>
 
@@ -71,6 +70,8 @@ int main() {
   // --------------------------------------------
   Program program("shaders/basics/vertex.glsl", "shaders/basics/fragment.glsl");
 
+  camera.add_program(&program);
+
   // Setup vertex data
   // --------------------------------------------
   Object obj("assets/monkey.obj", program);
@@ -83,9 +84,9 @@ int main() {
   Texture tex_awesome("assets/awesome_face.png", GL_RGBA);
 
   program.use();
-  glUniform1i(program.uniform_location("texture1"), 0);
-  glUniform1i(program.uniform_location("texture2"), 1);
-  glUniform1f(program.uniform_location("ratio"), ratio);
+  program.set("texture1", 0);
+  program.set("texture2", 1);
+  program.set("ratio", ratio);
 
   // Rendering loop
   // --------------------------------------------
@@ -101,17 +102,11 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    mat4 view = camera.get_view_matrix();
-    int loc_view = program.uniform_location("view");
-    glUniformMatrix4fv(loc_view, 1, GL_FALSE, value_ptr(view));
-
     glfwGetFramebufferSize(window, &width, &height);
-    mat4 projection = camera.get_projection_matrix((float) width / (float) height);
-    int loc_projection = program.uniform_location("projection");
-    glUniformMatrix4fv(loc_projection, 1, GL_FALSE, value_ptr(projection));
+    camera.update_matrices((float) width / (float) height);
 
     program.use();
-    glUniform1f(program.uniform_location("ratio"), ratio);
+    program.set("ratio", ratio);
     tex_container.bind(0);
     tex_awesome.bind(1);
 

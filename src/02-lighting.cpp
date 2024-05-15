@@ -11,9 +11,11 @@
 #include <camera.h>
 #include <window.h>
 #include <texture.h>
+#include <light.h>
 
 #define WIDTH 800
 #define HEIGHT 600
+#define N_POINT_LIGHTS 4
 
 using namespace glm;
 
@@ -65,41 +67,66 @@ int main() {
   std::default_random_engine e1(r());
   std::uniform_real_distribution<float> rnd(-1.0f, 1.0f);
 
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 20; i++) {
     Instance cube(cube_obj, cube_program);
     cube.transform = translate(cube.transform, 5.0f * vec3(rnd(e1), rnd(e1), -0.5f - 0.5f * rnd(e1)));
     cube.transform = rotate(cube.transform, radians(360.0f * rnd(e1)), vec3(rnd(e1), rnd(e1), rnd(e1)));
     cubes.push_back(cube);
   }
 
-  Object light_obj("assets/sphere.obj", light_program);
-  Instance light(light_obj, light_program);
+  // Lights
+  DirectionalLight dir_light(vec3(-0.2, -1.0, -0.2), vec3(0.5f));
 
+  Object light_obj("assets/sphere.obj", light_program);
+  std::vector<Instance> lights;
+  std::vector<PointLight> point_lights;
+
+  vec3 light_positions[N_POINT_LIGHTS] = {
+    vec3(4.5f, 4.0f, 3.0f),
+    vec3(-4.5f, 4.0f, 3.0f),
+    vec3(4.5f, -4.0f, 3.5f),
+    vec3(-4.5f, -4.0f, 3.5f)
+  };
+
+  vec3 light_colors[N_POINT_LIGHTS] = {
+    vec3(1.0f, 0.0f, 0.3f),
+    vec3(0.0f, 1.0f, 0.2f),
+    vec3(0.0f, 0.5f, 1.0f),
+    vec3(1.0f, 0.85f, 0.0f)
+  };
+
+  for (int i = 0; i < N_POINT_LIGHTS; i++) {
+    Instance light_ball(light_obj, light_program);
+    PointLight point_light(light_positions[i], light_colors[i]);
+
+    light_ball.transform = translate(mat4(1.0), light_positions[i]);
+    light_ball.transform = scale(light_ball.transform, vec3(0.1));
+
+    lights.push_back(light_ball);
+    point_lights.push_back(point_light);
+  }
+
+  SpotLight flashlight(camera.position, camera.forward, radians(12.5f), vec3(1.0f, 0.96f, 0.88f));
+
+  // Textures
   Texture container("assets/container2.png", GL_RGBA);
   Texture container_spec("assets/container2_spec.png", GL_RGBA);
 
   // Setup uniforms
   // --------------------------------------------
-//  vec3 light_pos(1.2f, 1.0f, 1.0f);
-  vec3 light_color(1.0f);
-  vec3 ambient = light_color * 0.1f;
-
   cube_program.use();
-  glUniform1f(cube_program.uniform_location("light.innerAngle"), cos(radians(12.5f)));
-  glUniform1f(cube_program.uniform_location("light.outerAngle"), cos(radians(15.0f)));
-  glUniform3f(cube_program.uniform_location("light.ambient"), ambient.x, ambient.y, ambient.z);
-  glUniform3f(cube_program.uniform_location("light.diffuse"), light_color.x, light_color.y, light_color.z);
-  glUniform3f(cube_program.uniform_location("light.specular"), light_color.x, light_color.y, light_color.z);
-  glUniform1f(cube_program.uniform_location("light.attConst"), 1.0f);
-  glUniform1f(cube_program.uniform_location("light.attLinear"), 0.045f);
-  glUniform1f(cube_program.uniform_location("light.attQuad"), 0.015f);
 
-  glUniform1i(cube_program.uniform_location("material.diffuse"), 0);
-  glUniform1i(cube_program.uniform_location("material.specular"), 1);
-  glUniform1f(cube_program.uniform_location("material.shininess"), 32.0f);
+  cube_program.set("material.diffuse", 0);
+  cube_program.set("material.specular", 1);
+  cube_program.set("material.shininess", 32.0f);
 
-//  light.transform = translate(mat4(1.0), light_pos);
-//  light.transform = scale(light.transform, vec3(0.1));
+  dir_light.set_uniforms(cube_program, "directionalLight");
+  flashlight.set_uniforms(cube_program, "spotLight");
+  for (int i = 0; i < N_POINT_LIGHTS; i++) {
+    std::stringstream ss;
+    ss << "pointLights[" << i << "]";
+    point_lights[i].set_uniforms(cube_program, ss.str());
+  }
 
   // Rendering loop
   // --------------------------------------------
@@ -119,22 +146,14 @@ int main() {
     camera.update_matrices((float) width / (float) height);
 
     cube_program.use();
-    glUniform3f(
-      cube_program.uniform_location("light.position"),
-      camera.position.x,
-      camera.position.y,
-      camera.position.z
-    );
-    glUniform3f(cube_program.uniform_location("light.direction"), camera.forward.x, camera.forward.y, camera.forward.z);
-    glUniform3f(cube_program.uniform_location("viewPos"), camera.position.x, camera.position.y, camera.position.z);
+    cube_program.set("spotLight.position", camera.position);
+    cube_program.set("spotLight.direction", camera.forward);
+    cube_program.set("viewPos", camera.position);
 
     container.bind(0);
     container_spec.bind(1);
-//    light.draw();
-
-    for (const auto &cube: cubes) {
-      cube.draw();
-    }
+    for (const auto &light: lights) light.draw();
+    for (const auto &cube: cubes) cube.draw();
 
     glfwSwapBuffers(window);
     glfwPollEvents();

@@ -56,3 +56,22 @@ unsigned Program::attrib_location(const char *name) const {
   return glGetAttribLocation(_id, name);
 }
 
+void Program::set(const char *name, int value) const {
+  glUniform1i(uniform_location(name), value);
+}
+
+void Program::set(const char *name, float value) const {
+  glUniform1f(uniform_location(name), value);
+}
+
+void Program::set(const char *name, vec2 value) const {
+  glUniform2f(uniform_location(name), value.x, value.y);
+}
+
+void Program::set(const char *name, vec3 value) const {
+  glUniform3f(uniform_location(name), value.x, value.y, value.z);
+}
+
+void Program::set_matrix(const char *name, mat4 &mat) const {
+  glUniformMatrix4fv(uniform_location(name), 1, GL_FALSE, value_ptr(mat));
+}

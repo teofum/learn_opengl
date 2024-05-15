@@ -1,4 +1,5 @@
 #version 330 core
+#define N_POINT_LIGHTS 4
 out vec4 FragColor;
 
 in vec2 texCoord;
@@ -51,9 +52,11 @@ struct SpotLight {
 };
 
 uniform Material material;
-uniform SpotLight light;
+uniform DirectionalLight directionalLight;
+uniform PointLight pointLights[N_POINT_LIGHTS];
+uniform SpotLight spotLight;
 
-vec3 calculateDirectionalLight(DirectionalLight light, Material material, vec3 diffMap, vec3 specMap, vec3 viewDir) {
+vec3 calculateDirectionalLight(DirectionalLight light, vec3 diffMap, vec3 specMap, vec3 viewDir) {
     vec3 ambient = diffMap * light.ambient;
 
     float diff = max(dot(-light.direction, normal), 0.0);
@@ -66,7 +69,7 @@ vec3 calculateDirectionalLight(DirectionalLight light, Material material, vec3 d
     return ambient + diffuse + specular;
 }
 
-vec3 calculatePointLight(PointLight light, Material material, vec3 diffMap, vec3 specMap, vec3 viewDir) {
+vec3 calculatePointLight(PointLight light, vec3 diffMap, vec3 specMap, vec3 viewDir) {
     vec3 ambient = diffMap * light.ambient;
 
     vec3 lightDir = normalize(light.position - fragPos);
@@ -83,7 +86,7 @@ vec3 calculatePointLight(PointLight light, Material material, vec3 diffMap, vec3
     return (ambient + diffuse + specular) / attenuation;
 }
 
-vec3 calculateSpotLight(SpotLight light, Material material, vec3 diffMap, vec3 specMap, vec3 viewDir) {
+vec3 calculateSpotLight(SpotLight light, vec3 diffMap, vec3 specMap, vec3 viewDir) {
     vec3 ambient = diffMap * light.ambient;
 
     vec3 lightDir = normalize(light.position - fragPos);
@@ -108,6 +111,11 @@ void main() {
     vec3 specMap = vec3(texture(material.specular, texCoord));
     vec3 viewDir = normalize(viewPos - fragPos);
 
-    vec3 color = calculateSpotLight(light, material, diffMap, specMap, viewDir);
+    vec3 color = vec3(0.0);
+    color += calculateDirectionalLight(directionalLight, diffMap, specMap, viewDir);
+    for (int i = 0; i < N_POINT_LIGHTS; i++) {
+        color += calculatePointLight(pointLights[i], diffMap, specMap, viewDir);
+    }
+    color += calculateSpotLight(spotLight, diffMap, specMap, viewDir);
     FragColor = vec4(color, 1.0);
 }
