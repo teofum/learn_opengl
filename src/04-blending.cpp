@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_access.hpp>
 
 #include <program.h>
 #include <model.h>
@@ -9,6 +10,8 @@
 #include <window.h>
 #include <light.h>
 #include <random>
+#include <map>
+#include <ranges>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -40,6 +43,9 @@ int main() {
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
   camera.position = vec3(0.0, 1.5, 5.0);
 
   // Compile shaders and link cube_program
@@ -47,14 +53,17 @@ int main() {
   Shader vertex_shader = Shader::vertex("shaders/blending/vertex.glsl");
   Shader frag_base = Shader::fragment("shaders/blending/basic_frag.glsl");
   Shader frag_grass = Shader::fragment("shaders/blending/grass_frag.glsl");
+  Shader frag_window = Shader::fragment("shaders/blending/window_frag.glsl");
   Shader frag_light = Shader::fragment("shaders/blending/light_frag.glsl");
 
   Program program(vertex_shader, frag_base);
   Program grass_program(vertex_shader, frag_grass);
+  Program window_program(vertex_shader, frag_window);
   Program light_program(vertex_shader, frag_light);
 
   camera.add_program(&program);
   camera.add_program(&grass_program);
+  camera.add_program(&window_program);
   camera.add_program(&light_program);
 
   // Setup objects
@@ -85,6 +94,15 @@ int main() {
     grass.push_back(grass_instance);
   }
 
+  Model window_model("assets/window.obj");
+  std::vector<Instance> windows;
+
+  for (int i = 0; i < 6; i++) {
+    Instance window_instance(window_model, window_program);
+    window_instance.transform = translate(window_instance.transform, 2.0f * vec3(rnd(e1), 0.0f, rnd(e1)));
+    windows.push_back(window_instance);
+  }
+
   // Lights
   vec3 light_pos(1.2, 1.0, 0.2);
   PointLight light(light_pos);
@@ -103,6 +121,10 @@ int main() {
   grass_program.use();
   grass_program.set("material.shininess", 32.0f);
   light.set_uniforms(grass_program, "pointLight");
+
+  window_program.use();
+  window_program.set("material.shininess", 32.0f);
+  light.set_uniforms(window_program, "pointLight");
 
   // Rendering loop
   // --------------------------------------------
@@ -129,6 +151,18 @@ int main() {
     box1.draw();
     box2.draw();
     for (const auto &grass_i: grass) grass_i.draw();
+
+    // Sort windows by distance to camera
+    std::map<float, const Instance *> sorted_windows;
+    for (const auto &window_i: windows) {
+      vec3 position(column(window_i.transform, 3));
+      vec3 diff = position - camera.position;
+      float dist = dot(diff, normalize(camera.forward));
+      sorted_windows[dist] = &window_i;
+    }
+    for (auto &window_i: std::ranges::reverse_view(sorted_windows)) {
+      window_i.second->draw();
+    }
 
     glfwSwapBuffers(window);
     glfwPollEvents();
