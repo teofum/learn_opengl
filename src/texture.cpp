@@ -2,7 +2,6 @@
 #include <stb/stb_image.h>
 
 #include <iostream>
-#include <utility>
 
 #include <texture.h>
 
