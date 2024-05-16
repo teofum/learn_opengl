@@ -108,5 +108,10 @@ void Model::load_texture(const std::string &path, Texture::Type type, std::vecto
 void Model::draw(const Program &program) const {
   program.use();
 
+  if (cull_backfaces)
+    glEnable(GL_CULL_FACE);
+  else
+    glDisable(GL_CULL_FACE);
+  
   for (const auto &mesh: meshes) mesh.draw(program);
 }

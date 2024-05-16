@@ -25,6 +25,8 @@ private:
   void load_texture(const std::string &path, Texture::Type type, std::vector<Texture> &textures);
 
 public:
+  bool cull_backfaces = true;
+
   explicit Model(const std::string &file_path);
 
   void draw(const Program &program) const;

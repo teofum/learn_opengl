@@ -81,6 +81,7 @@ int main() {
   box2.transform = translate(box2.transform, vec3(-1.0f, 0.0f, -1.0f));
 
   Model grass_model("assets/grass.obj");
+  grass_model.cull_backfaces = false;
   std::vector<Instance> grass;
 
   std::random_device r;
@@ -95,6 +96,7 @@ int main() {
   }
 
   Model window_model("assets/window.obj");
+  window_model.cull_backfaces = false;
   std::vector<Instance> windows;
 
   for (int i = 0; i < 6; i++) {
