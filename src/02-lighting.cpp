@@ -6,7 +6,7 @@
 #include <random>
 
 #include <program.h>
-#include <object.h>
+#include <model.h>
 #include <instance.h>
 #include <camera.h>
 #include <window.h>
@@ -60,7 +60,7 @@ int main() {
 
   // Setup objects
   // --------------------------------------------
-  Object cube_obj("assets/cube.obj", cube_program);
+  Model cube_obj("assets/cube.obj");
   std::vector<Instance> cubes;
 
   std::random_device r;
@@ -77,7 +77,7 @@ int main() {
   // Lights
   DirectionalLight dir_light(vec3(-0.2, -1.0, -0.2), vec3(0.5f));
 
-  Object light_obj("assets/sphere.obj", light_program);
+  Model light_obj("assets/sphere.obj");
   std::vector<Instance> lights;
   std::vector<PointLight> point_lights;
 
@@ -109,8 +109,8 @@ int main() {
   SpotLight flashlight(camera.position, camera.forward, radians(12.5f), vec3(1.0f, 0.96f, 0.88f));
 
   // Textures
-  Texture container("assets/container2.png", GL_RGBA);
-  Texture container_spec("assets/container2_spec.png", GL_RGBA);
+  Texture container("assets/container2.png", Texture::Type::Diffuse);
+  Texture container_spec("assets/container2_spec.png", Texture::Type::Specular);
 
   // Setup uniforms
   // --------------------------------------------

@@ -15,6 +15,10 @@ link_directories(/opt/homebrew/Cellar/glfw/3.4/lib)
 include_directories(/opt/homebrew/Cellar/glm/1.0.1/include)
 link_directories(/opt/homebrew/Cellar/glm/1.0.1/lib)
 
+# Assimp
+include_directories(/opt/homebrew/Cellar/assimp/5.4.1/include)
+link_directories(/opt/homebrew/Cellar/assimp/5.4.1/lib)
+
 add_executable(basics
         src/01-basics.cpp
         glad/glad.c
@@ -22,12 +26,13 @@ add_executable(basics
         src/shader.cpp
         src/program.cpp
         src/texture.cpp
-        src/object.cpp
+        src/mesh.cpp
         src/instance.cpp
         src/camera.cpp
         src/window.cpp
-        src/light.cpp)
-target_link_libraries(basics glfw)
+        src/light.cpp
+        src/model.cpp)
+target_link_libraries(basics glfw assimp)
 
 add_executable(lighting
         src/02-lighting.cpp
@@ -36,9 +41,10 @@ add_executable(lighting
         src/shader.cpp
         src/program.cpp
         src/texture.cpp
-        src/object.cpp
+        src/mesh.cpp
         src/instance.cpp
         src/camera.cpp
         src/window.cpp
-        src/light.cpp)
-target_link_libraries(lighting glfw)
+        src/light.cpp
+        src/model.cpp)
+target_link_libraries(lighting glfw assimp)

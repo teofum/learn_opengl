@@ -3,20 +3,20 @@
 
 #include <glm/glm.hpp>
 
-#include <object.h>
+#include <model.h>
 #include <program.h>
 
 using namespace glm;
 
 class Instance {
 private:
-  const Object &obj;
+  const Model &obj;
   const Program &program;
 
 public:
   mat4 transform = mat4(1.0);
 
-  Instance(const Object &obj, const Program &program);
+  Instance(const Model &obj, const Program &program);
 
   void draw(const char *model_matrix_name = "model") const;
 };

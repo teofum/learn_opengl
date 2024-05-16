@@ -7,7 +7,7 @@
 
 #include <program.h>
 #include <texture.h>
-#include <object.h>
+#include <model.h>
 #include <instance.h>
 #include <camera.h>
 #include <window.h>
@@ -74,14 +74,14 @@ int main() {
 
   // Setup vertex data
   // --------------------------------------------
-  Object obj("assets/monkey.obj", program);
+  Model obj("assets/monkey.obj");
   Instance instance(obj, program);
   Instance instance2(obj, program);
 
   // Load tex_container image and generate texture
   // --------------------------------------------
-  Texture tex_container("assets/container.jpg");
-  Texture tex_awesome("assets/awesome_face.png", GL_RGBA);
+  Texture tex_container("assets/container.jpg", Texture::Type::Specular);
+  Texture tex_awesome("assets/awesome_face.png", Texture::Type::Specular);
 
   program.use();
   program.set("texture1", 0);
