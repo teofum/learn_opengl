@@ -78,7 +78,7 @@ void Model::load_material_textures(
   for (unsigned i = 0; i < material->GetTextureCount(type); i++) {
     material->GetTexture(type, i, &str);
     std::stringstream ss;
-    ss << directory << str.C_Str();
+    ss << directory << "/" << str.C_Str();
     std::string path = ss.str();
 
     Texture::Type tex_type = Texture::Type::Diffuse;

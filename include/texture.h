@@ -32,8 +32,6 @@ public:
 
   Texture(const Texture &tex) = default;
 
-  ~Texture();
-
   unsigned id() const;
 
   Type type() const;

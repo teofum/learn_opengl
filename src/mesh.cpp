@@ -76,8 +76,8 @@ void Mesh::init(unsigned int pos_location, unsigned int normal_location, unsigne
 void Mesh::draw(const Program &program) const {
   unsigned diffuse = 0, specular = 0;
   for (const auto &texture: textures) {
-    unsigned i = diffuse + specular;
-
+    unsigned char i = diffuse + specular;
+    
     texture.bind(i);
     std::string uniform_name;
     switch (texture.type()) {

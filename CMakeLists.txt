@@ -48,3 +48,18 @@ add_executable(lighting
         src/light.cpp
         src/model.cpp)
 target_link_libraries(lighting glfw assimp)
+
+add_executable(model
+        src/03-model.cpp
+        glad/glad.c
+        stb/stb_image.cpp
+        src/shader.cpp
+        src/program.cpp
+        src/texture.cpp
+        src/mesh.cpp
+        src/instance.cpp
+        src/camera.cpp
+        src/window.cpp
+        src/light.cpp
+        src/model.cpp)
+target_link_libraries(model glfw assimp)

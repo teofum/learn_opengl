@@ -16,12 +16,6 @@ Texture::Texture(
   bool gen_mipmaps
 ) : _id(0), path(std::string(path)), _type(type) {
   glGenTextures(1, &_id);
-  glBindTexture(GL_TEXTURE_2D, _id);
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode_s);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode_t);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
 
   int width, height, n_channels;
   stbi_set_flip_vertically_on_load(true);
@@ -33,9 +27,16 @@ Texture::Texture(
     else if (n_channels == 3) format = GL_RGB;
     else if (n_channels == 4) format = GL_RGBA;
 
-    glTexImage2D(GL_TEXTURE_2D, 0, (GLint) format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, _id);
+    glTexImage2D(GL_TEXTURE_2D, 0, (GLint) format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
     if (gen_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode_s);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode_t);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
   } else {
     std::cerr << "ERROR::TEXTURE::LOAD_FAILED\n";
   }
@@ -64,10 +65,6 @@ Texture::Texture(
 
 Texture::Texture(const char *path, Type type)
   : Texture(path, type, GL_REPEAT) {
-}
-
-Texture::~Texture() {
-  glDeleteTextures(1, &_id);
 }
 
 unsigned Texture::id() const {
