@@ -31,7 +31,8 @@ add_executable(basics
         src/camera.cpp
         src/window.cpp
         src/light.cpp
-        src/model.cpp)
+        src/model.cpp
+        src/framebuffer.cpp)
 target_link_libraries(basics glfw assimp)
 
 add_executable(lighting
@@ -46,7 +47,8 @@ add_executable(lighting
         src/camera.cpp
         src/window.cpp
         src/light.cpp
-        src/model.cpp)
+        src/model.cpp
+        src/framebuffer.cpp)
 target_link_libraries(lighting glfw assimp)
 
 add_executable(model
@@ -61,7 +63,8 @@ add_executable(model
         src/camera.cpp
         src/window.cpp
         src/light.cpp
-        src/model.cpp)
+        src/model.cpp
+        src/framebuffer.cpp)
 target_link_libraries(model glfw assimp)
 
 add_executable(blending
@@ -76,7 +79,8 @@ add_executable(blending
         src/camera.cpp
         src/window.cpp
         src/light.cpp
-        src/model.cpp)
+        src/model.cpp
+        src/framebuffer.cpp)
 target_link_libraries(blending glfw assimp)
 
 add_executable(post-processing
@@ -91,5 +95,6 @@ add_executable(post-processing
         src/camera.cpp
         src/window.cpp
         src/light.cpp
-        src/model.cpp)
+        src/model.cpp
+        src/framebuffer.cpp)
 target_link_libraries(post-processing glfw assimp)
