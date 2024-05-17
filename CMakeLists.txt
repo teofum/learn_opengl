@@ -78,3 +78,18 @@ add_executable(blending
         src/light.cpp
         src/model.cpp)
 target_link_libraries(blending glfw assimp)
+
+add_executable(post-processing
+        src/05-post-processing.cpp
+        glad/glad.c
+        stb/stb_image.cpp
+        src/shader.cpp
+        src/program.cpp
+        src/texture.cpp
+        src/mesh.cpp
+        src/instance.cpp
+        src/camera.cpp
+        src/window.cpp
+        src/light.cpp
+        src/model.cpp)
+target_link_libraries(post-processing glfw assimp)

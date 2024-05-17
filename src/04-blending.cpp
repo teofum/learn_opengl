@@ -106,27 +106,22 @@ int main() {
   }
 
   // Lights
-  vec3 light_pos(1.2, 1.0, 0.2);
-  PointLight light(light_pos);
-
-  Model light_model("assets/sphere.obj");
-  Instance light_ball(light_model, light_program);
-  light_ball.transform = translate(mat4(1.0), light_pos);
-  light_ball.transform = scale(light_ball.transform, vec3(0.1));
+  vec3 light_dir(-0.2f, -1.0f, 0.0f);
+  DirectionalLight light(light_dir);
 
   // Setup uniforms
   // --------------------------------------------
   program.use();
   program.set("material.shininess", 32.0f);
-  light.set_uniforms(program, "pointLight");
+  light.set_uniforms(program, "directionalLight");
 
   grass_program.use();
   grass_program.set("material.shininess", 32.0f);
-  light.set_uniforms(grass_program, "pointLight");
+  light.set_uniforms(grass_program, "directionalLight");
 
   window_program.use();
   window_program.set("material.shininess", 32.0f);
-  light.set_uniforms(window_program, "pointLight");
+  light.set_uniforms(window_program, "directionalLight");
 
   // Rendering loop
   // --------------------------------------------
@@ -139,7 +134,7 @@ int main() {
     process_input(window);
 
     // Rendering code
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.5f, 0.6f, 0.8f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glfwGetFramebufferSize(window, &width, &height);
@@ -148,7 +143,6 @@ int main() {
     program.use();
     program.set("viewPos", camera.position);
 
-    light_ball.draw();
     floor.draw();
     box1.draw();
     box2.draw();
