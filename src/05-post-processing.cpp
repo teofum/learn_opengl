@@ -51,7 +51,7 @@ void process_input(GLFWwindow *window) {
 }
 
 int main() {
-  GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 03 — Model Loading");
+  GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 05 — Framebuffer");
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
   glfwSetKeyCallback(window, key_callback);

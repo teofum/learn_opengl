@@ -13,7 +13,7 @@ Texture::Texture(
   GLint min_filter,
   GLint mag_filter,
   bool gen_mipmaps
-) : _id(0), path(std::string(path)), _type(type) {
+) : _id(0), path(std::string(path)), _type(type), _gl_type(GL_TEXTURE_2D) {
   glGenTextures(1, &_id);
 
   int width, height, n_channels;
@@ -21,21 +21,17 @@ Texture::Texture(
   unsigned char *data = stbi_load(path, &width, &height, &n_channels, 0);
 
   if ((load_status = (data != nullptr))) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(_gl_type, _id);
+
     GLenum format = GL_RGB;
     if (n_channels == 1) format = GL_RED;
     else if (n_channels == 3) format = GL_RGB;
     else if (n_channels == 4) format = GL_RGBA;
 
+    glTexImage2D(_gl_type, 0, (GLint) format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _id);
-    glTexImage2D(GL_TEXTURE_2D, 0, (GLint) format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-    if (gen_mipmaps) glGenerateMipmap(GL_TEXTURE_2D);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode_s);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode_t);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter);
+    set_texture_params(wrap_mode_s, wrap_mode_t, 0, min_filter, mag_filter, gen_mipmaps);
   } else {
     std::cerr << "ERROR::TEXTURE::LOAD_FAILED\n";
   }
@@ -44,26 +40,57 @@ Texture::Texture(
 }
 
 Texture::Texture(
-  const char *path,
-  Type type,
-  GLint wrap_mode,
+  const char **paths,
+  Texture::Type type,
+  GLint wrap_mode_s,
+  GLint wrap_mode_t,
+  GLint wrap_mode_r,
   GLint min_filter,
   GLint mag_filter,
   bool gen_mipmaps
-)
-  : Texture(path, type, wrap_mode, wrap_mode, min_filter, mag_filter, gen_mipmaps) {
-}
+) : _id(0), path(std::string(paths[0])), _type(type), _gl_type(GL_TEXTURE_CUBE_MAP) {
+  glGenTextures(1, &_id);
 
-Texture::Texture(
-  const char *path,
-  Type type,
-  GLint wrap_mode
-)
-  : Texture(path, type, wrap_mode, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, true) {
-}
+  int width[6], height[6], n_channels[6];
+  unsigned char *data[6];
+  stbi_set_flip_vertically_on_load(false);
 
-Texture::Texture(const char *path, Type type)
-  : Texture(path, type, GL_REPEAT) {
+  load_status = 1;
+  for (unsigned i = 0; i < 6 && load_status; i++) {
+    data[i] = stbi_load(paths[i], &width[i], &height[i], &n_channels[i], 0);
+    load_status = data[i] != nullptr;
+  }
+
+  if (load_status) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(_gl_type, _id);
+
+    GLenum format = GL_RGB;
+    for (unsigned i = 0; i < 6; i++) {
+      if (n_channels[i] == 1) format = GL_RED;
+      else if (n_channels[i] == 3) format = GL_RGB;
+      else if (n_channels[i] == 4) format = GL_RGBA;
+
+      glTexImage2D(
+        GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+        0,
+        (GLint) format,
+        width[i],
+        height[i],
+        0,
+        format,
+        GL_UNSIGNED_BYTE,
+        data[i]
+      );
+      stbi_image_free(data[i]);
+    }
+
+    set_texture_params(wrap_mode_s, wrap_mode_t, wrap_mode_r, min_filter, mag_filter, gen_mipmaps);
+  } else {
+    std::cerr << "ERROR::TEXTURE::LOAD_FAILED\n";
+  }
+
+  glBindTexture(_gl_type, 0);
 }
 
 unsigned Texture::id() const {
@@ -80,9 +107,26 @@ bool Texture::ready() const {
 
 void Texture::bind(unsigned char texture_unit) const {
   glActiveTexture(GL_TEXTURE0 + texture_unit);
-  glBindTexture(GL_TEXTURE_2D, _id);
+  glBindTexture(_gl_type, _id);
 }
 
 const std::string &Texture::image_path() const {
   return path;
+}
+
+void Texture::set_texture_params(
+  GLint wrap_mode_s,
+  GLint wrap_mode_t,
+  GLint wrap_mode_r,
+  GLint min_filter,
+  GLint mag_filter,
+  bool gen_mipmaps
+) const {
+  if (gen_mipmaps) glGenerateMipmap(_gl_type);
+
+  glTexParameteri(_gl_type, GL_TEXTURE_WRAP_S, wrap_mode_s);
+  glTexParameteri(_gl_type, GL_TEXTURE_WRAP_T, wrap_mode_t);
+  glTexParameteri(_gl_type, GL_TEXTURE_WRAP_R, wrap_mode_r);
+  glTexParameteri(_gl_type, GL_TEXTURE_MIN_FILTER, min_filter);
+  glTexParameteri(_gl_type, GL_TEXTURE_MAG_FILTER, mag_filter);
 }
