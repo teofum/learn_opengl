@@ -142,7 +142,7 @@ int main() {
     floor.draw();
     box1.draw();
     box2.draw();
-    
+
     glDepthMask(GL_FALSE);
     skybox_program.use();
     skybox_texture.bind();

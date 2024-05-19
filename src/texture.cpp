@@ -18,18 +18,13 @@ Texture::Texture(
 
   int width, height, n_channels;
   stbi_set_flip_vertically_on_load(true);
-  unsigned char *data = stbi_load(path, &width, &height, &n_channels, 0);
+  unsigned char *data = stbi_load(path, &width, &height, &n_channels, 4);
 
   if ((load_status = (data != nullptr))) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(_gl_type, _id);
 
-    GLenum format = GL_RGB;
-    if (n_channels == 1) format = GL_RED;
-    else if (n_channels == 3) format = GL_RGB;
-    else if (n_channels == 4) format = GL_RGBA;
-
-    glTexImage2D(_gl_type, 0, (GLint) format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(_gl_type, 0, (GLint) GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     set_texture_params(wrap_mode_s, wrap_mode_t, 0, min_filter, mag_filter, gen_mipmaps);
   } else {
@@ -57,7 +52,7 @@ Texture::Texture(
 
   load_status = 1;
   for (unsigned i = 0; i < 6 && load_status; i++) {
-    data[i] = stbi_load(paths[i], &width[i], &height[i], &n_channels[i], 0);
+    data[i] = stbi_load(paths[i], &width[i], &height[i], &n_channels[i], 4);
     load_status = data[i] != nullptr;
   }
 
@@ -65,20 +60,15 @@ Texture::Texture(
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(_gl_type, _id);
 
-    GLenum format = GL_RGB;
     for (unsigned i = 0; i < 6; i++) {
-      if (n_channels[i] == 1) format = GL_RED;
-      else if (n_channels[i] == 3) format = GL_RGB;
-      else if (n_channels[i] == 4) format = GL_RGBA;
-
       glTexImage2D(
         GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
         0,
-        (GLint) format,
+        (GLint) GL_RGBA,
         width[i],
         height[i],
         0,
-        format,
+        GL_RGBA,
         GL_UNSIGNED_BYTE,
         data[i]
       );
