@@ -23,6 +23,7 @@ struct DirectionalLight {
 
 uniform Material material;
 uniform DirectionalLight directionalLight;
+uniform samplerCube skybox;
 
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 diffMap, vec3 specMap, vec3 viewDir) {
     vec3 ambient = diffMap * light.ambient;
@@ -30,17 +31,18 @@ vec3 calculateDirectionalLight(DirectionalLight light, vec3 diffMap, vec3 specMa
     float diff = max(dot(-light.direction, normal), 0.0);
     vec3 diffuse = diff * diffMap * light.diffuse;
 
-    vec3 reflectionDir = reflect(light.direction, normal);
-    float spec = pow(max(dot(viewDir, reflectionDir), 0.0), material.shininess);
+    vec3 reflectionDir = reflect(viewDir, normal);
+    float spec = pow(max(dot(-light.direction, reflectionDir), 0.0), material.shininess);
     vec3 specular = specMap * spec * light.specular;
+    vec3 reflection = specMap * vec3(texture(skybox, reflectionDir));
 
-    return ambient + diffuse + specular;
+    return ambient + diffuse + reflection;
 }
 
 void main() {
     vec3 diffMap = vec3(texture(material.diffuse0, texCoord));
     vec3 specMap = vec3(texture(material.specular0, texCoord));
-    vec3 viewDir = normalize(viewPos - fragPos);
+    vec3 viewDir = normalize(fragPos - viewPos);
 
     vec3 color = vec3(0.0);
     color += calculateDirectionalLight(directionalLight, diffMap, specMap, viewDir);

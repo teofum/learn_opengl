@@ -112,6 +112,7 @@ int main() {
   // Setup uniforms
   // --------------------------------------------
   program.use();
+  program.set("skybox", 10);
   program.set("material.shininess", 32.0f);
   light.set_uniforms(program, "directionalLight");
 
@@ -138,6 +139,7 @@ int main() {
 
     program.use();
     program.set("viewPos", camera.position);
+    skybox_texture.bind(10);
 
     floor.draw();
     box1.draw();
