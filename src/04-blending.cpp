@@ -18,16 +18,16 @@
 
 using namespace glm;
 
-Camera camera;
+Camera *camera_ptr;
 float delta_time = 0.0f;
 float last_frame = 0.0f;
 
 void mouse_callback([[maybe_unused]] GLFWwindow *window, double x_pos, double y_pos) {
-  camera.process_mouse_input(x_pos, y_pos);
+  camera_ptr->process_mouse_input(x_pos, y_pos);
 }
 
 void scroll_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double x_offset, double y_offset) {
-  camera.process_scroll_input(y_offset);
+  camera_ptr->process_scroll_input(y_offset);
 }
 
 void process_input(GLFWwindow *window) {
@@ -35,7 +35,7 @@ void process_input(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
   }
 
-  camera.process_keyboard_input(window, delta_time);
+  camera_ptr->process_keyboard_input(window, delta_time);
 }
 
 int main() {
@@ -46,6 +46,8 @@ int main() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  Camera camera;
+  camera_ptr = &camera;
   camera.position = vec3(0.0, 1.5, 5.0);
 
   // Compile shaders and link cube_program
@@ -61,10 +63,10 @@ int main() {
   Program window_program(vertex_shader, frag_window);
   Program light_program(vertex_shader, frag_light);
 
-  camera.add_program(&program);
-  camera.add_program(&grass_program);
-  camera.add_program(&window_program);
-  camera.add_program(&light_program);
+  camera.set_matrix_binding(program);
+  camera.set_matrix_binding(grass_program);
+  camera.set_matrix_binding(window_program);
+  camera.set_matrix_binding(light_program);
 
   // Setup objects
   // --------------------------------------------

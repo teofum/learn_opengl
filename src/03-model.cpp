@@ -14,16 +14,16 @@
 
 using namespace glm;
 
-Camera camera;
+Camera *camera_ptr;
 float delta_time = 0.0f;
 float last_frame = 0.0f;
 
 void mouse_callback([[maybe_unused]] GLFWwindow *window, double x_pos, double y_pos) {
-  camera.process_mouse_input(x_pos, y_pos);
+  camera_ptr->process_mouse_input(x_pos, y_pos);
 }
 
 void scroll_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double x_offset, double y_offset) {
-  camera.process_scroll_input(y_offset);
+  camera_ptr->process_scroll_input(y_offset);
 }
 
 void process_input(GLFWwindow *window) {
@@ -31,7 +31,7 @@ void process_input(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
   }
 
-  camera.process_keyboard_input(window, delta_time);
+  camera_ptr->process_keyboard_input(window, delta_time);
 }
 
 int main() {
@@ -39,6 +39,8 @@ int main() {
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 
+  Camera camera;
+  camera_ptr = &camera;
   camera.position = vec3(0.0, 0.0, 5.0);
 
   // Compile shaders and link cube_program
@@ -50,8 +52,8 @@ int main() {
   Program program(vertex_shader, fragment_shader);
   Program light_program(vertex_shader, light_shader);
 
-  camera.add_program(&program);
-  camera.add_program(&light_program);
+  camera.set_matrix_binding(program);
+  camera.set_matrix_binding(light_program);
 
   // Setup objects
   // --------------------------------------------

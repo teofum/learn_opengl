@@ -16,7 +16,7 @@ class Camera {
 private:
   vec2 last_frame_cursor = vec2(0.0, 0.0);
   bool mouse_moved = false;
-  std::vector<Program *> programs;
+  unsigned matrix_ubo, binding_point;
 
 public:
   vec3 position;
@@ -32,9 +32,9 @@ public:
   explicit Camera(
     vec3 position = vec3(0.0f, 0.0f, 3.0f),
     float fov = 45.0f,
-    vec2 angles = vec2(-90.0f, 0.0f)
-  ) : position(position), fov(fov), angles(angles) {
-  }
+    vec2 angles = vec2(-90.0f, 0.0f),
+    unsigned binding_point = 0
+  );
 
   mat4 get_view_matrix() const;
 
@@ -46,9 +46,9 @@ public:
 
   void process_keyboard_input(GLFWwindow *window, float delta_time);
 
-  void add_program(Program *program);
+  void set_matrix_binding(const Program &program) const;
 
-  void update_matrices(float aspect);
+  void update_matrices(float aspect) const;
 };
 
 #endif //LEARN_OPENGL_CAMERA_H

@@ -19,7 +19,7 @@ using namespace glm;
 
 float ratio = 0.2f;
 
-Camera camera;
+Camera *camera_ptr;
 float delta_time = 0.0f;
 float last_frame = 0.0f;
 
@@ -45,11 +45,11 @@ void key_callback(
 }
 
 void mouse_callback([[maybe_unused]] GLFWwindow *window, double x_pos, double y_pos) {
-  camera.process_mouse_input(x_pos, y_pos);
+  camera_ptr->process_mouse_input(x_pos, y_pos);
 }
 
 void scroll_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double x_offset, double y_offset) {
-  camera.process_scroll_input(y_offset);
+  camera_ptr->process_scroll_input(y_offset);
 }
 
 void process_input(GLFWwindow *window) {
@@ -57,7 +57,7 @@ void process_input(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
   }
 
-  camera.process_keyboard_input(window, delta_time);
+  camera_ptr->process_keyboard_input(window, delta_time);
 }
 
 int main() {
@@ -66,11 +66,14 @@ int main() {
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 
+  Camera camera;
+  camera_ptr = &camera;
+
   // Compile shaders and link program
   // --------------------------------------------
   Program program("shaders/basics/vertex.glsl", "shaders/basics/fragment.glsl");
 
-  camera.add_program(&program);
+  camera.set_matrix_binding(program);
 
   // Setup vertex data
   // --------------------------------------------

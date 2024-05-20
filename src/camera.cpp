@@ -1,5 +1,16 @@
 #include <camera.h>
 
+Camera::Camera(vec3 position, float fov, vec2 angles, unsigned binding_point)
+  : position(position), fov(fov), angles(angles), matrix_ubo(0), binding_point(binding_point) {
+  glGenBuffers(1, &matrix_ubo);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, matrix_ubo);
+  glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(mat4), nullptr, GL_STATIC_DRAW);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, matrix_ubo);
+}
+
 mat4 Camera::get_view_matrix() const {
   return lookAt(position, position + forward, up);
 }
@@ -43,17 +54,16 @@ void Camera::process_keyboard_input(GLFWwindow *window, float delta_time) {
     position += normalize(cross(forward, up)) * speed;
 }
 
-void Camera::add_program(Program *program) {
-  programs.push_back(program);
+void Camera::set_matrix_binding(const Program &program) const {
+  program.bind_uniform_block("Matrices", binding_point);
 }
 
-void Camera::update_matrices(float aspect) {
+void Camera::update_matrices(float aspect) const {
   mat4 view = get_view_matrix();
   mat4 projection = get_projection_matrix(aspect);
 
-  for (auto program: programs) {
-    program->use();
-    program->set_matrix("view", view);
-    program->set_matrix("projection", projection);
-  }
+  glBindBuffer(GL_UNIFORM_BUFFER, matrix_ubo);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), value_ptr(view));
+  glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), value_ptr(projection));
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }

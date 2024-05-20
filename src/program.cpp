@@ -75,3 +75,8 @@ void Program::set(const char *name, vec3 value) const {
 void Program::set_matrix(const char *name, mat4 &mat) const {
   glUniformMatrix4fv(uniform_location(name), 1, GL_FALSE, value_ptr(mat));
 }
+
+void Program::bind_uniform_block(const char *name, unsigned int value) const {
+  unsigned idx = glGetUniformBlockIndex(_id, name);
+  glUniformBlockBinding(_id, idx, value);
+}

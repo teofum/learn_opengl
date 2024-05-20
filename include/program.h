@@ -49,6 +49,8 @@ public:
   void set(const char *name, vec3 value) const;
 
   void set_matrix(const char *name, mat4 &mat) const;
+
+  void bind_uniform_block(const char *name, unsigned value) const;
 };
 
 #endif //LEARN_OPENGL_PROGRAM_H
