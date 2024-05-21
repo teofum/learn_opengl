@@ -114,3 +114,19 @@ add_executable(skybox
         src/model.cpp
         src/framebuffer.cpp)
 target_link_libraries(skybox glfw assimp)
+
+add_executable(instancing
+        src/07-instancing.cpp
+        glad/glad.c
+        stb/stb_image.cpp
+        src/shader.cpp
+        src/program.cpp
+        src/texture.cpp
+        src/mesh.cpp
+        src/instance.cpp
+        src/camera.cpp
+        src/window.cpp
+        src/light.cpp
+        src/model.cpp
+        src/framebuffer.cpp)
+target_link_libraries(instancing glfw assimp)

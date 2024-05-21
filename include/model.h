@@ -30,6 +30,10 @@ public:
   explicit Model(const std::string &file_path);
 
   void draw(const Program &program) const;
+
+  void draw_instanced(const Program &program, unsigned count) const;
+
+  void set_instance_attribute(unsigned location, const std::vector<mat4> &data) const;
 };
 
 #endif //LEARN_OPENGL_MODEL_H

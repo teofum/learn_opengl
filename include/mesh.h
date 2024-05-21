@@ -33,6 +33,8 @@ private:
 
   void init(unsigned pos_location, unsigned normal_location, unsigned uv_location);
 
+  void bind_textures(const Program &program) const;
+
 public:
   Mesh(
     const std::vector<Vertex> &vertices,
@@ -53,6 +55,10 @@ public:
   );
 
   void draw(const Program &program) const;
+
+  void draw_instanced(const Program &program, unsigned count) const;
+
+  void set_instance_attribute(unsigned location) const;
 };
 
 #endif // LEARN_OPENGL_MESH_H

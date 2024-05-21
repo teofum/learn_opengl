@@ -112,6 +112,28 @@ void Model::draw(const Program &program) const {
     glEnable(GL_CULL_FACE);
   else
     glDisable(GL_CULL_FACE);
-  
+
   for (const auto &mesh: meshes) mesh.draw(program);
+}
+
+void Model::set_instance_attribute(unsigned int location, const std::vector<mat4> &data) const {
+  unsigned buf;
+  glGenBuffers(1, &buf);
+  glBindBuffer(GL_ARRAY_BUFFER, buf);
+  glBufferData(GL_ARRAY_BUFFER, (long) (data.size() * sizeof(mat4)), data.data(), GL_STATIC_DRAW);
+
+  for (const auto &mesh: meshes) {
+    mesh.set_instance_attribute(location);
+  }
+}
+
+void Model::draw_instanced(const Program &program, unsigned int count) const {
+  program.use();
+
+  if (cull_backfaces)
+    glEnable(GL_CULL_FACE);
+  else
+    glDisable(GL_CULL_FACE);
+
+  for (const auto &mesh: meshes) mesh.draw_instanced(program, count);
 }
