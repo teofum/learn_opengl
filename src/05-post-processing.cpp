@@ -171,6 +171,7 @@ int main() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
+    glEnable(GL_FRAMEBUFFER_SRGB);
     post_program->use();
     post_program->set("screenWidth", width);
     post_program->set("screenHeight", height);
@@ -178,6 +179,7 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, fb.texture());
     screen_quad.draw(*post_program);
     glEnable(GL_DEPTH_TEST);
+    glDisable(GL_FRAMEBUFFER_SRGB);
 
     glfwSwapBuffers(window);
     glfwPollEvents();

@@ -44,6 +44,8 @@ int main() {
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 
+  glEnable(GL_FRAMEBUFFER_SRGB);
+
   Camera camera;
   camera_ptr = &camera;
   camera.position = vec3(0.0, 0.0, 5.0);
@@ -141,7 +143,7 @@ int main() {
     process_input(window);
 
     // Rendering code
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glfwGetFramebufferSize(window, &width, &height);

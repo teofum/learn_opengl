@@ -66,6 +66,8 @@ int main() {
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 
+  glEnable(GL_FRAMEBUFFER_SRGB);
+
   Camera camera;
   camera_ptr = &camera;
 

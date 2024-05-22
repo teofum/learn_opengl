@@ -24,7 +24,17 @@ Texture::Texture(
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(_gl_type, _id);
 
-    glTexImage2D(_gl_type, 0, (GLint) GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(
+      _gl_type,
+      0,
+      (type == Type::Diffuse ? GL_SRGB_ALPHA : GL_RGBA),
+      width,
+      height,
+      0,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      data
+    );
 
     set_texture_params(wrap_mode_s, wrap_mode_t, 0, min_filter, mag_filter, gen_mipmaps);
   } else {

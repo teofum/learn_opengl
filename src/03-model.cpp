@@ -38,6 +38,8 @@ int main() {
   GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 03 — Model Loading");
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
+  
+  glEnable(GL_FRAMEBUFFER_SRGB);
 
   Camera camera;
   camera_ptr = &camera;

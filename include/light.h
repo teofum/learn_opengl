@@ -46,7 +46,7 @@ class PointLight : Light {
 public:
   vec3 position, attenuation;
 
-  PointLight(vec3 position, vec3 ambient, vec3 diffuse, vec3 specular, vec3 attenuation = vec3(1.0, 0.09, 0.032))
+  PointLight(vec3 position, vec3 ambient, vec3 diffuse, vec3 specular, vec3 attenuation = vec3(0.0, 0.0, 1.0))
     : Light(ambient, diffuse, specular), position(position), attenuation(attenuation) {
   }
 
@@ -70,7 +70,7 @@ public:
     vec3 ambient,
     vec3 diffuse,
     vec3 specular,
-    vec3 attenuation = vec3(1.0, 0.09, 0.032)
+    vec3 attenuation = vec3(0.0, 0.0, 1.0)
   )
     : Light(ambient, diffuse, specular),
       position(position),
