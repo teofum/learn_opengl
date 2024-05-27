@@ -35,7 +35,7 @@ void process_input(GLFWwindow *window) {
 }
 
 int main() {
-  GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 06 — Skybox");
+  GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 08 — Shadow mapping");
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 
@@ -49,16 +49,11 @@ int main() {
 
   // Compile shaders and link cube_program
   // --------------------------------------------
-  Shader vertex_shader = Shader::vertex("shaders/skybox/vertex.glsl");
-  Shader frag_base = Shader::fragment("shaders/skybox/basic_frag.glsl");
-  Shader frag_light = Shader::fragment("shaders/skybox/light_frag.glsl");
-
-  Program program(vertex_shader, frag_base);
-  Program light_program(vertex_shader, frag_light);
+  Program program("shaders/shadow-map/vertex.glsl", "shaders/shadow-map/fragment.glsl");
+  Program shadow_program("shaders/shadow-map/shadow_vert.glsl", "shaders/shadow-map/shadow_frag.glsl");
   Program skybox_program("shaders/skybox/sky_vert.glsl", "shaders/skybox/sky_frag.glsl");
 
   camera.set_matrix_binding(program);
-  camera.set_matrix_binding(light_program);
   camera.set_matrix_binding(skybox_program);
 
   // Setup objects
@@ -73,12 +68,15 @@ int main() {
   Instance box2(box_model, program);
 
   box1.transform = translate(box1.transform, vec3(3.0f, 0.0f, 2.0f));
-  box2.transform = translate(box2.transform, vec3(-1.0f, 0.0f, -1.0f));
+
+  box2.transform = translate(box2.transform, vec3(-1.0f, 1.0f, -1.0f));
+  box2.transform = rotate(box2.transform, radians(55.0f), vec3(-1.0f, 1.0f, -1.0f));
 
   // Lights
   vec3 light_dir(-0.2f, -1.0f, 0.5f);
   DirectionalLight light(1, light_dir);
-  light.update_ubo();
+  light.set_ubo_binding(program, "DirectionalLightBlock");
+  light.set_ubo_binding(shadow_program, "DirectionalLightBlock");
 
   // Setup skybox
   // --------------------------------------------
@@ -117,11 +115,15 @@ int main() {
   // --------------------------------------------
   program.use();
   program.set("skybox", 10);
+  program.set("shadowMap", 11);
   program.set("material.shininess", 32.0f);
-  light.set_ubo_binding(program, "DirectionalLightBlock");
 
   skybox_program.use();
   skybox_program.set("skybox", 0);
+
+  // Setup shadow framebuffer
+  // --------------------------------------------
+  DepthFramebuffer shadow_depth_buffer(SHADOW_WIDTH, SHADOW_HEIGHT);
 
   // Rendering loop
   // --------------------------------------------
@@ -133,17 +135,34 @@ int main() {
     last_frame = current_frame;
 
     process_input(window);
+    glfwGetFramebufferSize(window, &width, &height);
+
+    // Update light
+    light.direction = vec3(cos(current_frame) * 0.5f, -1.0f, sin(current_frame) * 0.5f);
+    program.use();
+    light.update_ubo();
+
+    // Shadow mapping
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    shadow_depth_buffer.bind();
+    glClear(GL_DEPTH_BUFFER_BIT);
+    floor.draw_with(shadow_program);
+    box1.draw_with(shadow_program);
+    box2.draw_with(shadow_program);
+    Framebuffer::unbind();
 
     // Rendering code
+    glViewport(0, 0, width, height);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glfwGetFramebufferSize(window, &width, &height);
     camera.update_matrices((float) width / (float) height);
 
     program.use();
     program.set("viewPos", camera.position);
     skybox_texture.bind(10);
+    glActiveTexture(GL_TEXTURE0 + 11);
+    glBindTexture(GL_TEXTURE_2D, shadow_depth_buffer.depth_map());
 
     floor.draw();
     box1.draw();

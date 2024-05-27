@@ -12,3 +12,10 @@ void Instance::draw(const char *model_matrix_name) const {
   glUniformMatrix4fv(loc_model, 1, GL_FALSE, value_ptr(transform));
   obj.draw(program);
 }
+
+void Instance::draw_with(const Program &prog, const char *model_matrix_name) const {
+  prog.use();
+  int loc_model = prog.uniform_location(model_matrix_name);
+  glUniformMatrix4fv(loc_model, 1, GL_FALSE, value_ptr(transform));
+  obj.draw(prog);
+}

@@ -15,19 +15,18 @@ struct Material {
 };
 
 struct PointLight {
+    mat4 lightMatrix;
     vec3 position;
-
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-
-    float attConst;
-    float attLinear;
-    float attQuad;
+    vec3 attenuation;
 };
 
 uniform Material material;
-uniform PointLight pointLight;
+layout (std140) uniform PointLightBlock {
+    PointLight pointLight;
+};
 
 vec3 calculatePointLight(PointLight light, vec3 diffMap, vec3 specMap, vec3 viewDir) {
     vec3 ambient = diffMap * light.ambient;
@@ -41,7 +40,7 @@ vec3 calculatePointLight(PointLight light, vec3 diffMap, vec3 specMap, vec3 view
     vec3 specular = specMap * spec * light.specular;
 
     float dist = length(light.position - fragPos);
-    float attenuation = light.attConst + light.attLinear * dist + light.attQuad * dist * dist;
+    float attenuation = light.attenuation.x + light.attenuation.y * dist + light.attenuation.z * dist * dist;
 
     return (ambient + diffuse + specular) / attenuation;
 }

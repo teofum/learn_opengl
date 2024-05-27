@@ -79,7 +79,7 @@ int main() {
   }
 
   // Lights
-  DirectionalLight dir_light(vec3(-0.2, -1.0, -0.2), vec3(0.5f));
+  DirectionalLight dir_light(1, vec3(-0.2, -1.0, -0.2), vec3(0.5f));
 
   Model light_obj("assets/sphere.obj");
   std::vector<Instance> lights;
@@ -93,15 +93,15 @@ int main() {
   };
 
   vec3 light_colors[N_POINT_LIGHTS] = {
-    vec3(1.0f, 0.0f, 0.3f),
-    vec3(0.0f, 1.0f, 0.2f),
-    vec3(0.0f, 0.5f, 1.0f),
-    vec3(1.0f, 0.85f, 0.0f)
+    vec3(1.0f, 0.0f, 0.3f) * 10.0f,
+    vec3(0.0f, 1.0f, 0.2f) * 10.0f,
+    vec3(0.0f, 0.5f, 1.0f) * 10.0f,
+    vec3(1.0f, 0.85f, 0.0f) * 10.0f
   };
 
   for (int i = 0; i < N_POINT_LIGHTS; i++) {
     Instance light_ball(light_obj, light_program);
-    PointLight point_light(light_positions[i], light_colors[i]);
+    PointLight point_light(2 + i, light_positions[i], light_colors[i]);
 
     light_ball.transform = translate(mat4(1.0), light_positions[i]);
     light_ball.transform = scale(light_ball.transform, vec3(0.1));
@@ -110,7 +110,8 @@ int main() {
     point_lights.push_back(point_light);
   }
 
-  SpotLight flashlight(camera.position, camera.forward, radians(12.5f), vec3(1.0f, 0.96f, 0.88f));
+  SpotLight flashlight(2 + N_POINT_LIGHTS, camera.position, camera.forward, radians(12.5f), vec3(1.0f, 0.96f, 0.88f));
+  flashlight.attenuation = vec3(0.0f, 0.0f, 0.01f);
 
   // Textures
   Texture container("assets/container2.png", Texture::Type::Diffuse);
@@ -124,12 +125,16 @@ int main() {
   cube_program.set("material.specular", 1);
   cube_program.set("material.shininess", 32.0f);
 
-  dir_light.set_uniforms(cube_program, "directionalLight");
-  flashlight.set_uniforms(cube_program, "spotLight");
+  dir_light.set_ubo_binding(cube_program, "DirectionalLightBlock");
+  dir_light.update_ubo();
+  flashlight.set_ubo_binding(cube_program, "SpotLightBlock");
+  flashlight.update_ubo();
   for (int i = 0; i < N_POINT_LIGHTS; i++) {
     std::stringstream ss;
-    ss << "pointLights[" << i << "]";
-    point_lights[i].set_uniforms(cube_program, ss.str());
+    ss << "PointLightBlock" << i;
+    std::string str = ss.str();
+    point_lights[i].set_ubo_binding(cube_program, str.c_str());
+    point_lights[i].update_ubo();
   }
 
   // Rendering loop
@@ -150,9 +155,11 @@ int main() {
     camera.update_matrices((float) width / (float) height);
 
     cube_program.use();
-    cube_program.set("spotLight.position", camera.position);
-    cube_program.set("spotLight.direction", camera.forward);
     cube_program.set("viewPos", camera.position);
+
+    flashlight.position = camera.position;
+    flashlight.direction = camera.forward;
+    flashlight.update_ubo();
 
     container.bind(0);
     container_spec.bind(1);

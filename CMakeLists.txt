@@ -130,3 +130,19 @@ add_executable(instancing
         src/model.cpp
         src/framebuffer.cpp)
 target_link_libraries(instancing glfw assimp)
+
+add_executable(shadow-map
+        src/08-shadow-map.cpp
+        glad/glad.c
+        stb/stb_image.cpp
+        src/shader.cpp
+        src/program.cpp
+        src/texture.cpp
+        src/mesh.cpp
+        src/instance.cpp
+        src/camera.cpp
+        src/window.cpp
+        src/light.cpp
+        src/model.cpp
+        src/framebuffer.cpp)
+target_link_libraries(shadow-map glfw assimp)

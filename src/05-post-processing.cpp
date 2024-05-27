@@ -115,13 +115,14 @@ int main() {
 
   // Lights
   vec3 light_dir(-0.2f, -1.0f, 0.5f);
-  DirectionalLight light(light_dir);
+  DirectionalLight light(1, light_dir);
+  light.update_ubo();
 
   // Setup uniforms
   // --------------------------------------------
   program.use();
   program.set("material.shininess", 32.0f);
-  light.set_uniforms(program, "directionalLight");
+  light.set_ubo_binding(program, "DirectionalLightBlock");
 
   // Setup framebuffer
   // --------------------------------------------

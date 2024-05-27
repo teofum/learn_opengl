@@ -19,6 +19,8 @@ public:
   Instance(const Model &obj, const Program &program);
 
   void draw(const char *model_matrix_name = "model") const;
+
+  void draw_with(const Program &prog, const char *model_matrix_name = "model") const;
 };
 
 #endif //LEARN_OPENGL_INSTANCE_H

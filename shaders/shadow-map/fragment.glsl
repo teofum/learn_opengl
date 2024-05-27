@@ -4,6 +4,7 @@ out vec4 FragColor;
 in vec2 texCoord;
 in vec3 normal;
 in vec3 fragPos;
+in vec4 fragPosLightSpace;
 
 uniform vec3 viewPos;
 
@@ -26,6 +27,27 @@ layout (std140) uniform DirectionalLightBlock {
     DirectionalLight directionalLight;
 };
 uniform samplerCube skybox;
+uniform sampler2D shadowMap;
+
+float calculateShadow(DirectionalLight light) {
+    vec3 lightSpace = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    lightSpace = lightSpace * 0.5 + 0.5;
+    float bias = max(0.05 * (1.0 - dot(normal, -light.direction)), 0.005);
+    float fragDepth = lightSpace.z;
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            float closestDepth = texture(shadowMap, lightSpace.xy + vec2(x, y) * texelSize).r;
+            shadow += step(fragDepth - bias, closestDepth);
+        }
+    }
+    shadow /= 9.0;
+    if (fragDepth >= 1.0) shadow = 1.0;
+
+    return shadow;
+}
 
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 diffMap, vec3 specMap, vec3 viewDir) {
     vec3 ambient = diffMap * light.ambient;
@@ -38,7 +60,9 @@ vec3 calculateDirectionalLight(DirectionalLight light, vec3 diffMap, vec3 specMa
     vec3 specular = specMap * spec * light.specular;
     vec3 reflection = specMap * vec3(texture(skybox, reflectionDir));
 
-    return ambient + diffuse + reflection;
+    float shadow = calculateShadow(light);
+
+    return ambient + (diffuse + specular) * shadow;
 }
 
 void main() {

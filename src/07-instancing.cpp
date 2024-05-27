@@ -37,7 +37,7 @@ void process_input(GLFWwindow *window) {
 }
 
 int main() {
-  GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 06 — Skybox");
+  GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 07 — Instancing");
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 
@@ -102,17 +102,18 @@ int main() {
 
   // Lights
   vec3 light_dir(-0.2f, -1.0f, 0.5f);
-  DirectionalLight light(light_dir);
+  DirectionalLight light(1, light_dir);
+  light.update_ubo();
 
   // Setup uniforms
   // --------------------------------------------
   planet_program.use();
   planet_program.set("material.shininess", 32.0f);
-  light.set_uniforms(planet_program, "directionalLight");
+  light.set_ubo_binding(planet_program, "DirectionalLightBlock");
 
   asteroid_program.use();
   asteroid_program.set("material.shininess", 32.0f);
-  light.set_uniforms(asteroid_program, "directionalLight");
+  light.set_ubo_binding(asteroid_program, "DirectionalLightBlock");
 
   // Rendering loop
   // --------------------------------------------

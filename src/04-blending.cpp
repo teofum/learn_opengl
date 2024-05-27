@@ -110,21 +110,22 @@ int main() {
 
   // Lights
   vec3 light_dir(-0.2f, -1.0f, 0.0f);
-  DirectionalLight light(light_dir);
+  DirectionalLight light(1, light_dir);
 
   // Setup uniforms
   // --------------------------------------------
   program.use();
   program.set("material.shininess", 32.0f);
-  light.set_uniforms(program, "directionalLight");
+  light.set_ubo_binding(program, "DirectionalLightBlock");
 
   grass_program.use();
   grass_program.set("material.shininess", 32.0f);
-  light.set_uniforms(grass_program, "directionalLight");
+  light.set_ubo_binding(grass_program, "DirectionalLightBlock");
 
   window_program.use();
   window_program.set("material.shininess", 32.0f);
-  light.set_uniforms(window_program, "directionalLight");
+  light.set_ubo_binding(window_program, "DirectionalLightBlock");
+  light.update_ubo();
 
   // Rendering loop
   // --------------------------------------------

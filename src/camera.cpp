@@ -67,3 +67,7 @@ void Camera::update_matrices(float aspect) const {
   glBufferSubData(GL_UNIFORM_BUFFER, sizeof(mat4), sizeof(mat4), value_ptr(projection));
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
+
+unsigned Camera::get_matrix_ubo() const {
+  return matrix_ubo;
+}

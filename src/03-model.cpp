@@ -38,7 +38,7 @@ int main() {
   GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 03 — Model Loading");
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
-  
+
   glEnable(GL_FRAMEBUFFER_SRGB);
 
   Camera camera;
@@ -64,7 +64,7 @@ int main() {
 
   // Lights
   vec3 light_pos(1.2, 1.0, 0.2);
-  PointLight light(light_pos);
+  PointLight light(1, light_pos);
 
   Model light_model("assets/sphere.obj");
   Instance light_ball(light_model, light_program);
@@ -75,7 +75,8 @@ int main() {
   // --------------------------------------------
   program.use();
   program.set("material.shininess", 32.0f);
-  light.set_uniforms(program, "pointLight");
+  light.set_ubo_binding(program, "PointLightBlock");
+  light.update_ubo();
 
   // Rendering loop
   // --------------------------------------------

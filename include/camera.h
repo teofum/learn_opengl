@@ -49,6 +49,8 @@ public:
   void set_matrix_binding(const Program &program) const;
 
   void update_matrices(float aspect) const;
+
+  unsigned get_matrix_ubo() const;
 };
 
 #endif //LEARN_OPENGL_CAMERA_H

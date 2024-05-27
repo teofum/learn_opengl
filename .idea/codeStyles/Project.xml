@@ -23,6 +23,8 @@
       <option name="METHOD_CALL_CHAIN_WRAP" value="1" />
       <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="false" />
       <option name="KEEP_SIMPLE_METHODS_IN_ONE_LINE" value="false" />
+      <option name="ARRAY_INITIALIZER_LBRACE_ON_NEXT_LINE" value="true" />
+      <option name="ARRAY_INITIALIZER_RBRACE_ON_NEXT_LINE" value="true" />
       <option name="SOFT_MARGINS" value="80,120" />
       <indentOptions>
         <option name="INDENT_SIZE" value="2" />

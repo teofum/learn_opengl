@@ -16,14 +16,16 @@ struct Material {
 
 struct DirectionalLight {
     vec3 direction;
-
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+    mat4 lightMatrix;
 };
 
 uniform Material material;
-uniform DirectionalLight directionalLight;
+layout (std140) uniform DirectionalLightBlock {
+    DirectionalLight directionalLight;
+};
 
 vec3 calculateDirectionalLight(DirectionalLight light, vec3 diffMap, vec3 specMap, vec3 viewDir) {
     vec3 ambient = diffMap * light.ambient;
