@@ -37,7 +37,7 @@ void process_input(GLFWwindow *window) {
 }
 
 int main() {
-  GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 06 — Skybox");
+  GLFWwindow *window = init_window(WIDTH, HEIGHT, "Learn OpenGL 07 — Instancing");
   glfwSetCursorPosCallback(window, mouse_callback);
   glfwSetScrollCallback(window, scroll_callback);
 

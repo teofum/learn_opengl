@@ -13,6 +13,36 @@ void DirectionalLight::set_uniforms(const Program &program, const std::string &l
   program.set(uname(light_name, "specular").c_str(), specular);
 }
 
+void DirectionalLight::set_matrix_binding(const Program &program) const {
+  program.bind_uniform_block("LightMatrix", _binding_point);
+}
+
+void DirectionalLight::init_shadows(unsigned binding_point) {
+  _binding_point = binding_point;
+  glGenBuffers(1, &matrix_ubo);
+
+  glBindBuffer(GL_UNIFORM_BUFFER, matrix_ubo);
+  glBufferData(GL_UNIFORM_BUFFER, sizeof(mat4), nullptr, GL_STATIC_DRAW);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+  glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, matrix_ubo);
+}
+
+void DirectionalLight::cast_shadows(const DepthFramebuffer &depth_buffer) const {
+  glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+  depth_buffer.bind();
+  glClear(GL_DEPTH_BUFFER_BIT);
+
+  float depth = 10.0f;
+  mat4 view = lookAt(direction * -depth * 0.5f, vec3(0.0f), vec3(0.0f, 1.0f, 0.0f));
+  mat4 projection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, depth);
+  mat4 light_matrix = projection * view;
+
+  glBindBuffer(GL_UNIFORM_BUFFER, matrix_ubo);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(mat4), value_ptr(light_matrix));
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
 void PointLight::set_uniforms(const Program &program, const std::string &light_name) const {
   program.set(uname(light_name, "position").c_str(), position);
   program.set(uname(light_name, "ambient").c_str(), ambient);

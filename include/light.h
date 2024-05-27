@@ -6,6 +6,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <program.h>
+#include <framebuffer.h>
+
+#define SHADOW_WIDTH 1024
+#define SHADOW_HEIGHT 1024
 
 using namespace glm;
 
@@ -13,18 +17,27 @@ class Light {
 protected:
   static std::string uname(const std::string &name, const std::string &prop);
 
+  unsigned matrix_ubo, _binding_point;
+
 public:
   vec3 ambient, diffuse, specular;
 
   Light(vec3 ambient, vec3 diffuse, vec3 specular)
-    : ambient(ambient), diffuse(diffuse), specular(specular) {
+    : ambient(ambient), diffuse(diffuse), specular(specular), matrix_ubo(0), _binding_point(0) {
   }
 
   explicit Light(vec3 color = vec3(1.0f), float ambient_intensity = 0.1f)
     : Light(color * ambient_intensity, color, color) {
   }
 
-  [[maybe_unused]] virtual void set_uniforms(const Program &program, const std::string &light_name) const = 0;
+  virtual void set_uniforms(const Program &program, const std::string &light_name) const = 0;
+
+  virtual void init_shadows(unsigned binding_point) = 0;
+
+  virtual void set_matrix_binding(const Program &program) const = 0;
+
+  virtual void cast_shadows(const DepthFramebuffer &depth_buffer) const = 0;
+
 };
 
 class DirectionalLight : Light {
@@ -40,6 +53,12 @@ public:
   }
 
   void set_uniforms(const Program &program, const std::string &light_name) const override;
+
+  void init_shadows(unsigned binding_point) override;
+
+  void set_matrix_binding(const Program &program) const override;
+
+  void cast_shadows(const DepthFramebuffer &depth_buffer) const override;
 };
 
 class PointLight : Light {

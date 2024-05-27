@@ -3,21 +3,38 @@
 
 #include <glad/glad.h>
 
-class TextureFramebuffer {
-private:
+class Framebuffer {
+protected:
   unsigned _id;
+
+public:
+  Framebuffer();
+
+  unsigned id() const;
+
+  void bind() const;
+
+  static void unbind();
+};
+
+class TextureFramebuffer : public Framebuffer {
+private:
   unsigned _texture;
 
 public:
   TextureFramebuffer(int width, int height);
 
-  unsigned id() const;
-
   unsigned texture() const;
+};
 
-  void bind() const;
+class DepthFramebuffer : public Framebuffer {
+private:
+  unsigned _depth;
 
-  static void unbind();
+public:
+  DepthFramebuffer(int width, int height);
+
+  unsigned depth_map() const;
 };
 
 #endif //LEARN_OPENGL_FRAMEBUFFER_H
