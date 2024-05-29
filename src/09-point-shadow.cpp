@@ -169,12 +169,12 @@ int main() {
     glfwGetFramebufferSize(window, &width, &height);
 
     // Update lights
-    light0.position = vec3(cos(current_frame) * 2.0f, 0.0f, sin(current_frame) * 2.0f);
+    light0.position = vec3(cos(current_frame) * 4.0f, 0.0f, sin(current_frame) * 4.0f);
     light0.update_ubo();
     light_obj0.transform = translate(mat4(1.0), light0.position);
     light_obj0.transform = scale(light_obj0.transform, vec3(0.05f));
 
-    light1.position = vec3(sin(current_frame * 0.5f) * 2.0f, cos(current_frame * 0.5f) * 2.0f, 0.0f);
+    light1.position = vec3(sin(current_frame * 0.5f) * 4.0f, cos(current_frame * 0.5f) * 4.0f, 0.0f);
     light1.update_ubo();
     light_obj1.transform = translate(mat4(1.0), light1.position);
     light_obj1.transform = scale(light_obj1.transform, vec3(0.05f));
