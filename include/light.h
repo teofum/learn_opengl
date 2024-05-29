@@ -10,6 +10,7 @@
 
 #define SHADOW_WIDTH 1024
 #define SHADOW_HEIGHT 1024
+#define POINT_SHADOW_FAR 25.0f
 
 using namespace glm;
 
@@ -59,7 +60,7 @@ public:
     vec3 diffuse,
     vec3 specular,
     vec3 attenuation = vec3(0.0, 0.0, 1.0))
-    : Light(binding_point, sizeof(mat4) + 5 * sizeof(vec4), ambient, diffuse, specular), position(position),
+    : Light(binding_point, 6 * sizeof(mat4) + 5 * sizeof(vec4), ambient, diffuse, specular), position(position),
       attenuation(attenuation) {
   }
 

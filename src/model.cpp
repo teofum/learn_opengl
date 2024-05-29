@@ -1,6 +1,6 @@
 #include <model.h>
 
-Model::Model(const std::string &file_path) {
+Model::Model(const std::string &file_path, bool flip_normals) : flip_normals(flip_normals) {
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFile(
     file_path,
@@ -41,6 +41,10 @@ Mesh Model::process_mesh(const aiMesh *mesh, const aiScene *scene) {
       vec3(normal.x, normal.y, normal.z),
       vec2(0.0f, 0.0f)
     };
+
+    if (flip_normals) {
+      vertex.normal *= -1.0f;
+    }
 
     if (mesh->mTextureCoords[0]) {
       vertex.uv.x = mesh->mTextureCoords[0][i].x;

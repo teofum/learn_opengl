@@ -23,12 +23,12 @@ struct DirectionalLight {
 };
 
 struct PointLight {
-    mat4 lightMatrix;
     vec3 position;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
     vec3 attenuation;
+    mat4 lightMatrices[6];
 };
 
 struct SpotLight {

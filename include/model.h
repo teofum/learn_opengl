@@ -16,6 +16,8 @@ private:
   std::vector<Texture> loaded_textures;
   std::string directory;
 
+  bool flip_normals;
+
   void process_node(const aiNode *node, const aiScene *scene);
 
   Mesh process_mesh(const aiMesh *mesh, const aiScene *scene);
@@ -27,7 +29,7 @@ private:
 public:
   bool cull_backfaces = true;
 
-  explicit Model(const std::string &file_path);
+  explicit Model(const std::string &file_path, bool flip_normals = false);
 
   void draw(const Program &program) const;
 

@@ -17,7 +17,7 @@ Shader::Shader(GLenum type, const char *src_path)
   } catch (std::ifstream::failure &e) {
     std::cerr << "ERROR::SHADER::" << get_type() << "::FILE_READ_FAILED\n";
   }
-  
+
   const char *shader_src_cstr = shader_src.c_str();
 
   _id = glCreateShader(type);
@@ -43,6 +43,10 @@ std::string Shader::get_type() const {
 
 Shader Shader::vertex(const char *src_path) {
   return {GL_VERTEX_SHADER, src_path};
+}
+
+Shader Shader::geometry(const char *src_path) {
+  return {GL_GEOMETRY_SHADER, src_path};
 }
 
 Shader Shader::fragment(const char *src_path) {

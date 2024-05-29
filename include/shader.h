@@ -23,6 +23,8 @@ public:
 
   static Shader vertex(const char *src_path);
 
+  static Shader geometry(const char *src_path);
+
   static Shader fragment(const char *src_path);
 
   unsigned id() const;
