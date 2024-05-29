@@ -66,7 +66,7 @@ int main() {
 
   // Setup objects
   // --------------------------------------------
-  Model room_model("assets/container.obj", true);
+  Model room_model("assets/brick_container.obj", true);
   Instance room(room_model, program);
 
   room.transform = translate(room.transform, vec3(0.0f, -5.0f, 0.0f));
@@ -92,10 +92,10 @@ int main() {
   Instance light_obj1(light_model, light_program);
 
   // Lights
-  PointLight light0(1, vec3(0.0f), vec3(1.0f, 0.7f, 0.5f) * 10.0f);
+  PointLight light0(1, vec3(0.0f), vec3(1.0f, 0.5f, 0.2f) * 10.0f);
   light0.set_ubo_binding(program, "PointLightBlock0");
 
-  PointLight light1(2, vec3(0.0f), vec3(0.5f, 0.8f, 1.0f) * 10.0f);
+  PointLight light1(2, vec3(0.0f), vec3(0.2f, 0.3f, 1.0f) * 10.0f);
   light1.set_ubo_binding(program, "PointLightBlock1");
 
   // Setup uniforms

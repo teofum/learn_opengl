@@ -2,14 +2,16 @@
 out vec4 FragColor;
 
 in vec2 texCoord;
-in vec3 normal;
 in vec3 fragPos;
+in mat3 TBN;
 
 uniform vec3 viewPos;
 
 struct Material {
     sampler2D diffuse0;
     sampler2D specular0;
+    sampler2D normal0;
+    bool useNormalMap;
     float shininess;
 };
 
@@ -63,6 +65,10 @@ float calculateShadow(PointLight light, samplerCube shadowMap) {
 }
 vec3 calculatePointLight(PointLight light, vec3 diffMap, vec3 specMap, vec3 viewDir, samplerCube shadowMap) {
     vec3 ambient = diffMap * light.ambient;
+
+    vec3 normal = material.useNormalMap ? texture(material.normal0, texCoord).rgb : vec3(0.5, 0.5, 1.0);
+    normal = normal * 2.0 - 1.0;
+    normal = normalize(TBN * normal);
 
     vec3 lightDir = normalize(light.position - fragPos);
     float diff = max(dot(lightDir, normal), 0.0);

@@ -4,7 +4,7 @@ Model::Model(const std::string &file_path, bool flip_normals) : flip_normals(fli
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFile(
     file_path,
-    aiProcess_Triangulate | aiProcess_FlipUVs
+    aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace
   );
 
   if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -36,14 +36,18 @@ Mesh Model::process_mesh(const aiMesh *mesh, const aiScene *scene) {
   for (unsigned i = 0; i < mesh->mNumVertices; i++) {
     const auto &pos = mesh->mVertices[i];
     const auto &normal = mesh->mNormals[i];
+    const auto &tangent = mesh->mTangents[i];
+
     Vertex vertex{
       vec3(pos.x, pos.y, pos.z),
       vec3(normal.x, normal.y, normal.z),
+      vec3(tangent.x, tangent.y, tangent.z),
       vec2(0.0f, 0.0f)
     };
 
     if (flip_normals) {
       vertex.normal *= -1.0f;
+      vertex.tangent *= -1.0f;
     }
 
     if (mesh->mTextureCoords[0]) {
@@ -67,6 +71,7 @@ Mesh Model::process_mesh(const aiMesh *mesh, const aiScene *scene) {
     aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
     load_material_textures(material, aiTextureType_DIFFUSE, textures);
     load_material_textures(material, aiTextureType_SPECULAR, textures);
+    load_material_textures(material, aiTextureType_HEIGHT, textures);
   }
 
   // We won't be using these vectors anymore, so we can move them instead of copying
@@ -87,6 +92,7 @@ void Model::load_material_textures(
 
     Texture::Type tex_type = Texture::Type::Diffuse;
     if (type == aiTextureType_SPECULAR) tex_type = Texture::Type::Specular;
+    else if (type == aiTextureType_HEIGHT) tex_type = Texture::Type::Normal;
 
     load_texture(path, tex_type, textures);
   }

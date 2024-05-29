@@ -15,11 +15,12 @@
 #define DEFAULT_POS_LOCATION 0
 #define DEFAULT_NORMAL_LOCATION 1
 #define DEFAULT_UV_LOCATION 2
+#define DEFAULT_TANGENT_LOCATION 3
 
 using namespace glm;
 
 struct Vertex {
-  vec3 position, normal;
+  vec3 position, normal, tangent;
   vec2 uv;
 };
 
@@ -31,7 +32,7 @@ private:
   std::vector<unsigned> vertex_indices;
   std::vector<Texture> textures;
 
-  void init(unsigned pos_location, unsigned normal_location, unsigned uv_location);
+  void init(unsigned pos_location, unsigned normal_location, unsigned uv_location, unsigned tangent_location);
 
   void bind_textures(const Program &program) const;
 
@@ -42,6 +43,7 @@ public:
     const std::vector<Texture> &textures,
     unsigned pos_location = DEFAULT_POS_LOCATION,
     unsigned normal_location = DEFAULT_NORMAL_LOCATION,
+    unsigned tangent_location = DEFAULT_TANGENT_LOCATION,
     unsigned uv_location = DEFAULT_UV_LOCATION
   );
 
@@ -51,6 +53,7 @@ public:
     std::vector<Texture> &&textures,
     unsigned pos_location = DEFAULT_POS_LOCATION,
     unsigned normal_location = DEFAULT_NORMAL_LOCATION,
+    unsigned tangent_location = DEFAULT_TANGENT_LOCATION,
     unsigned uv_location = DEFAULT_UV_LOCATION
   );
 

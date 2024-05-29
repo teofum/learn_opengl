@@ -7,31 +7,33 @@ Mesh::Mesh(
   const std::vector<Vertex> &vertices,
   const std::vector<unsigned int> &indices,
   const std::vector<Texture> &textures,
-  unsigned int pos_location,
-  unsigned int normal_location,
-  unsigned int uv_location
+  unsigned pos_location,
+  unsigned normal_location,
+  unsigned tangent_location,
+  unsigned uv_location
 ) : vertex_data(vertices), vertex_indices(indices), textures(textures) {
   vertex_count = vertex_indices.size();
   vao = vbo = ebo = 0;
 
-  init(pos_location, normal_location, uv_location);
+  init(pos_location, normal_location, uv_location, tangent_location);
 }
 
 Mesh::Mesh(
   std::vector<Vertex> &&vertices,
   std::vector<unsigned int> &&indices,
   std::vector<Texture> &&textures,
-  unsigned int pos_location,
-  unsigned int normal_location,
-  unsigned int uv_location
+  unsigned pos_location,
+  unsigned normal_location,
+  unsigned tangent_location,
+  unsigned uv_location
 ) : vertex_data(vertices), vertex_indices(indices), textures(textures) {
   vertex_count = vertex_indices.size();
   vao = vbo = ebo = 0;
 
-  init(pos_location, normal_location, uv_location);
+  init(pos_location, normal_location, uv_location, tangent_location);
 }
 
-void Mesh::init(unsigned int pos_location, unsigned int normal_location, unsigned int uv_location) {
+void Mesh::init(unsigned pos_location, unsigned normal_location, unsigned uv_location, unsigned tangent_location) {
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
   glGenBuffers(1, &ebo);
@@ -65,6 +67,10 @@ void Mesh::init(unsigned int pos_location, unsigned int normal_location, unsigne
   glEnableVertexAttribArray(normal_location);
   glVertexAttribPointer(normal_location, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, normal));
 
+  // Vertex tangents
+  glEnableVertexAttribArray(tangent_location);
+  glVertexAttribPointer(tangent_location, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, tangent));
+
   // Vertex UVs
   glEnableVertexAttribArray(uv_location);
   glVertexAttribPointer(uv_location, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *) offsetof(Vertex, uv));
@@ -74,9 +80,9 @@ void Mesh::init(unsigned int pos_location, unsigned int normal_location, unsigne
 }
 
 void Mesh::bind_textures(const Program &program) const {
-  unsigned diffuse = 0, specular = 0;
+  unsigned diffuse = 0, specular = 0, normal = 0;
   for (const auto &texture: textures) {
-    unsigned char i = diffuse + specular;
+    unsigned char i = diffuse + specular + normal;
 
     texture.bind(i);
     std::string uniform_name;
@@ -86,6 +92,10 @@ void Mesh::bind_textures(const Program &program) const {
         break;
       case Texture::Type::Specular:
         uniform_name = "material.specular" + std::to_string(specular++);
+        break;
+      case Texture::Type::Normal:
+        uniform_name = "material.normal" + std::to_string(normal++);
+        program.set("material.useNormalMap", true);
         break;
     }
 

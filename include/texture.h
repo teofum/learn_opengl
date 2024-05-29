@@ -4,7 +4,7 @@
 class Texture {
 public:
   enum Type {
-    Diffuse = 0, Specular
+    Diffuse = 0, Specular, Normal
   };
 
   Texture(
