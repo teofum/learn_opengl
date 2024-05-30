@@ -133,10 +133,10 @@ int main() {
   // Setup screen quad
   // --------------------------------------------
   std::vector<Vertex> quad_vertices = {
-    {vec3(-1.0f, 1.0f, 0.0f),  vec3(), vec2(0.0f, 1.0f)},
-    {vec3(-1.0f, -1.0f, 0.0f), vec3(), vec2(0.0f, 0.0f)},
-    {vec3(1.0f, -1.0f, 0.0f),  vec3(), vec2(1.0f, 0.0f)},
-    {vec3(1.0f, 1.0f, 0.0f),   vec3(), vec2(1.0f, 1.0f)}
+    {vec3(-1.0f, 1.0f, 0.0f),  vec3(), vec3(), vec2(0.0f, 1.0f)},
+    {vec3(-1.0f, -1.0f, 0.0f), vec3(), vec3(), vec2(0.0f, 0.0f)},
+    {vec3(1.0f, -1.0f, 0.0f),  vec3(), vec3(), vec2(1.0f, 0.0f)},
+    {vec3(1.0f, 1.0f, 0.0f),   vec3(), vec3(), vec2(1.0f, 1.0f)}
   };
   std::vector<unsigned> quad_indices = {0, 1, 2, 0, 2, 3};
   std::vector<Texture> quad_textures;

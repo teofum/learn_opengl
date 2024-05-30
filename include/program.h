@@ -24,8 +24,6 @@ public:
 
   Program(const char *vertex_src, const char *fragment_src);
 
-  ~Program();
-
   void attach_shader(const Shader &shader) const;
 
   void link();

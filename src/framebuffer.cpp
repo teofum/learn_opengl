@@ -16,13 +16,13 @@ void Framebuffer::unbind() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-TextureFramebuffer::TextureFramebuffer(int width, int height)
+TextureFramebuffer::TextureFramebuffer(int width, int height, GLint internal_format)
   : Framebuffer(), _texture(0) {
   glBindFramebuffer(GL_FRAMEBUFFER, _id);
 
   glGenTextures(1, &_texture);
   glBindTexture(GL_TEXTURE_2D, _texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glBindTexture(GL_TEXTURE_2D, 0);

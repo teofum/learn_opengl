@@ -18,10 +18,6 @@ Program::Program(const char *vertex_src, const char *fragment_src)
   link();
 }
 
-Program::~Program() {
-  glDeleteProgram(_id);
-}
-
 void Program::attach_shader(const Shader &shader) const {
   glAttachShader(_id, shader.id());
 }

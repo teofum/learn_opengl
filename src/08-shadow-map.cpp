@@ -81,14 +81,14 @@ int main() {
   // Setup skybox
   // --------------------------------------------
   std::vector<Vertex> sky_vertices = {
-    {vec3(-1.0f, -1.0f, -1.0f), vec3(), vec2()},
-    {vec3(-1.0f, -1.0f, 1.0f),  vec3(), vec2()},
-    {vec3(-1.0f, 1.0f, -1.0f),  vec3(), vec2()},
-    {vec3(-1.0f, 1.0f, 1.0f),   vec3(), vec2()},
-    {vec3(1.0f, -1.0f, -1.0f),  vec3(), vec2()},
-    {vec3(1.0f, -1.0f, 1.0f),   vec3(), vec2()},
-    {vec3(1.0f, 1.0f, -1.0f),   vec3(), vec2()},
-    {vec3(1.0f, 1.0f, 1.0f),    vec3(), vec2()}
+    {vec3(-1.0f, -1.0f, -1.0f), vec3(), vec3(), vec2()},
+    {vec3(-1.0f, -1.0f, 1.0f),  vec3(), vec3(), vec2()},
+    {vec3(-1.0f, 1.0f, -1.0f),  vec3(), vec3(), vec2()},
+    {vec3(-1.0f, 1.0f, 1.0f),   vec3(), vec3(), vec2()},
+    {vec3(1.0f, -1.0f, -1.0f),  vec3(), vec3(), vec2()},
+    {vec3(1.0f, -1.0f, 1.0f),   vec3(), vec3(), vec2()},
+    {vec3(1.0f, 1.0f, -1.0f),   vec3(), vec3(), vec2()},
+    {vec3(1.0f, 1.0f, 1.0f),    vec3(), vec3(), vec2()}
   };
   std::vector<unsigned> sky_indices = {
     2, 0, 4, 4, 6, 2,

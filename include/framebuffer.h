@@ -22,7 +22,7 @@ private:
   unsigned _texture;
 
 public:
-  TextureFramebuffer(int width, int height);
+  TextureFramebuffer(int width, int height, GLint internal_format = GL_RGB16F);
 
   unsigned texture() const;
 };
