@@ -15,16 +15,20 @@ public:
   void bind() const;
 
   static void unbind();
+
+  virtual void free() = 0;
 };
 
 class TextureFramebuffer : public Framebuffer {
 private:
-  unsigned _texture;
+  unsigned _texture, _rbo;
 
 public:
   TextureFramebuffer(int width, int height, GLint internal_format = GL_RGB16F);
 
   unsigned texture() const;
+
+  void free() override;
 };
 
 class DepthFramebuffer : public Framebuffer {

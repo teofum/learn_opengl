@@ -43,6 +43,9 @@ void Camera::process_scroll_input(double y_offset) {
 
 void Camera::process_keyboard_input(GLFWwindow *window, float delta_time) {
   float speed = camera_speed * delta_time;
+  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+    speed *= 4.0;
+  }
 
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     position += forward * speed;
@@ -52,6 +55,10 @@ void Camera::process_keyboard_input(GLFWwindow *window, float delta_time) {
     position -= normalize(cross(forward, up)) * speed;
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     position += normalize(cross(forward, up)) * speed;
+  if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    position += cross(normalize(cross(forward, up)), forward) * speed;
+  if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+    position -= cross(normalize(cross(forward, up)), forward) * speed;
 }
 
 void Camera::set_matrix_binding(const Program &program) const {
