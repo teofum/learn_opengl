@@ -36,6 +36,7 @@ uniform samplerCube shadowMap1;
 uniform float farPlane;
 
 #define SAMPLES 20
+#define THRESHOLD 1.0
 
 vec3 sampleOffsetDirections[SAMPLES] = vec3[](
     vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),

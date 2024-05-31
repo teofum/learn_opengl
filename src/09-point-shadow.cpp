@@ -19,7 +19,7 @@ public:
   }
 
 private:
-  Program program, light_program, shadow_program;
+  Program program, light_program, shadow_program, bloom_program, blur_program_h, blur_program_v, add_program;
   std::vector<Program> post_programs;
 
   std::unique_ptr<Model> room_model, box_model, light_model;
@@ -31,7 +31,9 @@ private:
   std::vector<unsigned> depth_cubemaps;
   std::vector<unsigned> shadow_depth_fbos;
 
-  std::unique_ptr<TextureFramebuffer> framebuffer;
+  std::unique_ptr<TextureFramebuffer> render_framebuffer;
+  std::unique_ptr<TextureFramebuffer> bloom_framebuffer;
+  std::unique_ptr<TextureFramebuffer> bloom_framebuffer_2;
   std::unique_ptr<Mesh> screen_quad;
 
   unsigned pp_frag_idx = 0;
@@ -65,6 +67,17 @@ private:
     for (const auto &tm_frag: pp_tonemap) {
       post_programs.emplace_back(pp_vertex, tm_frag);
     }
+
+    Shader pp_bloom = Shader::fragment("shaders/point-shadow/pp_frag_bloom.glsl");
+    bloom_program = Program(pp_vertex, pp_bloom);
+
+    Shader pp_blur_h = Shader::fragment("shaders/point-shadow/pp_frag_blur_h.glsl");
+    Shader pp_blur_v = Shader::fragment("shaders/point-shadow/pp_frag_blur_v.glsl");
+    blur_program_h = Program(pp_vertex, pp_blur_h);
+    blur_program_v = Program(pp_vertex, pp_blur_v);
+
+    Shader pp_add = Shader::fragment("shaders/point-shadow/pp_frag_bloom_add.glsl");
+    add_program = Program(pp_vertex, pp_add);
 
     camera->set_matrix_binding(program);
     camera->set_matrix_binding(light_program);
@@ -100,11 +113,11 @@ private:
     light_objs.emplace_back(*light_model, light_program);
 
     // Lights
-    PointLight light0(1, vec3(0.0f), vec3(1.0f, 0.5f, 0.2f) * 100.0f);
+    PointLight light0(1, vec3(0.0f), vec3(1.0f, 0.5f, 0.0f) * 100.0f);
     light0.set_ubo_binding(program, "PointLightBlock0");
     lights.push_back(light0);
 
-    PointLight light1(2, vec3(0.0f), vec3(0.2f, 0.3f, 1.0f) * 100.0f);
+    PointLight light1(2, vec3(0.0f), vec3(0.0f, 0.3f, 1.0f) * 100.0f);
     light1.set_ubo_binding(program, "PointLightBlock1");
     lights.push_back(light1);
 
@@ -118,6 +131,10 @@ private:
 
     shadow_program.use();
     shadow_program.set("farPlane", POINT_SHADOW_FAR);
+
+    add_program.use();
+    add_program.set("screenTexture", 0);
+    add_program.set("bloomTexture", 1);
 
     // Setup shadow framebuffer
     // --------------------------------------------
@@ -147,9 +164,15 @@ private:
       shadow_depth_fbos.push_back(shadow_depth_fbo);
     }
 
-    // Setup framebuffer
+    // Setup framebuffers
     // --------------------------------------------
-    framebuffer = std::make_unique<TextureFramebuffer>(
+    render_framebuffer = std::make_unique<TextureFramebuffer>(
+      TextureFramebuffer(viewport_width, viewport_height)
+    );
+    bloom_framebuffer = std::make_unique<TextureFramebuffer>(
+      TextureFramebuffer(viewport_width, viewport_height)
+    );
+    bloom_framebuffer_2 = std::make_unique<TextureFramebuffer>(
       TextureFramebuffer(viewport_width, viewport_height)
     );
 
@@ -173,8 +196,18 @@ private:
   void resize_callback(int width, int height) override {
     Window::resize_callback(width, height);
 
-    framebuffer->free();
-    framebuffer = std::make_unique<TextureFramebuffer>(
+    render_framebuffer->free();
+    render_framebuffer = std::make_unique<TextureFramebuffer>(
+      TextureFramebuffer(width, height)
+    );
+
+    bloom_framebuffer->free();
+    bloom_framebuffer = std::make_unique<TextureFramebuffer>(
+      TextureFramebuffer(width, height)
+    );
+
+    bloom_framebuffer_2->free();
+    bloom_framebuffer_2 = std::make_unique<TextureFramebuffer>(
       TextureFramebuffer(width, height)
     );
   }
@@ -211,15 +244,14 @@ private:
 
     // Rendering code
     glViewport(0, 0, viewport_width, viewport_height);
-
-    framebuffer->bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     camera->update_matrices(aspect_ratio());
 
     program.use();
     program.set("viewPos", camera->position);
+
+    render_framebuffer->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (int i = 0; i < 2; i++) {
       glActiveTexture(GL_TEXTURE10 + i);
@@ -235,16 +267,59 @@ private:
     Framebuffer::unbind();
 
     // Postprocessing
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_FRAMEBUFFER_SRGB);
+
+    // Bloom
+    bloom_framebuffer->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    bloom_program.use();
+    bloom_program.set("screenWidth", viewport_width);
+    bloom_program.set("screenHeight", viewport_height);
+    render_framebuffer->bind_texture();
+    screen_quad->draw(bloom_program);
+    Framebuffer::unbind();
+
+    bloom_framebuffer_2->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    blur_program_h.use();
+    blur_program_h.set("screenWidth", viewport_width);
+    blur_program_h.set("screenHeight", viewport_height);
+    bloom_framebuffer->bind_texture();
+    screen_quad->draw(blur_program_h);
+    Framebuffer::unbind();
+
+    bloom_framebuffer->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    blur_program_v.use();
+    blur_program_v.set("screenWidth", viewport_width);
+    blur_program_v.set("screenHeight", viewport_height);
+    bloom_framebuffer_2->bind_texture();
+    screen_quad->draw(blur_program_v);
+    Framebuffer::unbind();
+
+    bloom_framebuffer_2->bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    add_program.use();
+    add_program.set("screenWidth", viewport_width);
+    add_program.set("screenHeight", viewport_height);
+    render_framebuffer->bind_texture(0);
+    bloom_framebuffer->bind_texture(1);
+    screen_quad->draw(add_program);
+    Framebuffer::unbind();
+
+    // Tonemapping
     const auto &post_program = post_programs[pp_frag_idx];
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_FRAMEBUFFER_SRGB);
     post_program.use();
     post_program.set("screenWidth", viewport_width);
     post_program.set("screenHeight", viewport_height);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, framebuffer->texture());
+    bloom_framebuffer_2->bind_texture();
     screen_quad->draw(post_program);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_FRAMEBUFFER_SRGB);

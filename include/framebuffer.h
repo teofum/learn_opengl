@@ -2,6 +2,7 @@
 #define LEARN_OPENGL_FRAMEBUFFER_H
 
 #include <glad/glad.h>
+#include <vector>
 
 class Framebuffer {
 protected:
@@ -21,12 +22,15 @@ public:
 
 class TextureFramebuffer : public Framebuffer {
 private:
-  unsigned _texture, _rbo;
+  std::vector<unsigned> textures;
+  unsigned _rbo;
 
 public:
-  TextureFramebuffer(int width, int height, GLint internal_format = GL_RGB16F);
+  TextureFramebuffer(int width, int height, GLint internal_format = GL_RGB16F, unsigned num_textures = 1);
 
-  unsigned texture() const;
+  unsigned texture(unsigned idx = 0) const;
+
+  void bind_texture(unsigned texture_unit = 0, unsigned idx = 0) const;
 
   void free() override;
 };
@@ -39,6 +43,8 @@ public:
   DepthFramebuffer(int width, int height);
 
   unsigned depth_map() const;
+
+  void free() override;
 };
 
 #endif //LEARN_OPENGL_FRAMEBUFFER_H
