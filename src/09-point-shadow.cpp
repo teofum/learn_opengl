@@ -19,10 +19,11 @@ private:
   Program bloom_program, blur_program_h, blur_program_v, add_program;
   TextureFramebuffer internal_buffer;
   int width, height;
+  unsigned iterations;
 
 public:
-  PostProcessBloom(int width, int height)
-    : width(width), height(height), internal_buffer(width, height) {
+  PostProcessBloom(int width, int height, unsigned iterations = 1)
+    : width(width), height(height), iterations(iterations), internal_buffer(width, height) {
     Shader pp_vertex = Shader::vertex("shaders/point-shadow/pp_vert.glsl");
 
     Shader pp_bloom = Shader::fragment("shaders/point-shadow/pp_frag_bloom.glsl");
@@ -65,23 +66,25 @@ public:
     read_buffer.bind_texture();
     screen_quad.draw(bloom_program);
 
-    write_buffer.bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    blur_program_h.use();
-    blur_program_h.set("screenWidth", viewport_width);
-    blur_program_h.set("screenHeight", viewport_height);
-    internal_buffer.bind_texture();
-    screen_quad.draw(blur_program_h);
+    for (int i = 0; i < iterations; i++) {
+      write_buffer.bind();
+      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT);
+      blur_program_h.use();
+      blur_program_h.set("screenWidth", viewport_width);
+      blur_program_h.set("screenHeight", viewport_height);
+      internal_buffer.bind_texture();
+      screen_quad.draw(blur_program_h);
 
-    internal_buffer.bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    blur_program_v.use();
-    blur_program_v.set("screenWidth", viewport_width);
-    blur_program_v.set("screenHeight", viewport_height);
-    write_buffer.bind_texture();
-    screen_quad.draw(blur_program_v);
+      internal_buffer.bind();
+      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT);
+      blur_program_v.use();
+      blur_program_v.set("screenWidth", viewport_width);
+      blur_program_v.set("screenHeight", viewport_height);
+      write_buffer.bind_texture();
+      screen_quad.draw(blur_program_v);
+    }
 
     write_buffer.bind();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -157,7 +160,7 @@ private:
       PostProcessing(viewport_width, viewport_height, post_programs[2])
     );
 
-    PostProcessBloom bloom(viewport_width, viewport_height);
+    PostProcessBloom bloom(viewport_width, viewport_height, 5);
     post_processing->add_stage(bloom);
 
     // Setup objects
