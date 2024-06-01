@@ -29,6 +29,11 @@ void PostProcessing::resize_framebuffers(int width, int height) {
   viewport_height = height;
 }
 
+
+unsigned PostProcessing::input_framebuffer() const {
+  return framebuffers[0]->id();
+}
+
 void PostProcessing::bind_input_framebuffer() const {
   framebuffers[0]->bind();
 }

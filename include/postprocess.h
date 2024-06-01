@@ -34,6 +34,8 @@ public:
 
   void resize_framebuffers(int width, int height);
 
+  unsigned input_framebuffer() const;
+
   void bind_input_framebuffer() const;
 
   void run();

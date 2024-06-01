@@ -16,17 +16,18 @@ void Framebuffer::unbind() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-TextureFramebuffer::TextureFramebuffer(int width, int height, GLint internal_format, unsigned num_textures)
+TextureFramebuffer::TextureFramebuffer(int width, int height, std::vector<GLint> internal_formats)
   : Framebuffer(), _rbo(0) {
   glBindFramebuffer(GL_FRAMEBUFFER, _id);
 
+  size_t num_textures = internal_formats.size();
   textures.resize(num_textures);
   glGenTextures((int) num_textures, textures.data());
 
   std::vector<unsigned> attachments;
   for (int i = 0; i < num_textures; i++) {
     glBindTexture(GL_TEXTURE_2D, textures[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, internal_formats[i], width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -46,6 +47,10 @@ TextureFramebuffer::TextureFramebuffer(int width, int height, GLint internal_for
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _rbo);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+TextureFramebuffer::TextureFramebuffer(int width, int height, GLint internal_format, unsigned num_textures)
+  : TextureFramebuffer(width, height, std::vector<GLint>(num_textures, internal_format)) {
 }
 
 unsigned TextureFramebuffer::texture(unsigned idx) const {

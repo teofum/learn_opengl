@@ -26,6 +26,8 @@ private:
   unsigned _rbo;
 
 public:
+  TextureFramebuffer(int width, int height, std::vector<GLint> internal_formats);
+
   TextureFramebuffer(int width, int height, GLint internal_format = GL_RGB16F, unsigned num_textures = 1);
 
   unsigned texture(unsigned idx = 0) const;
