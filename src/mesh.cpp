@@ -81,6 +81,8 @@ void Mesh::init(unsigned pos_location, unsigned normal_location, unsigned uv_loc
 
 void Mesh::bind_textures(const Program &program) const {
   unsigned diffuse = 0, specular = 0, normal = 0;
+
+  program.set("material.useNormalMap", false);
   for (const auto &texture: textures) {
     unsigned char i = diffuse + specular + normal;
 

@@ -33,7 +33,8 @@ add_executable(basics
         src/light.cpp
         src/model.cpp
         src/framebuffer.cpp
-        src/postprocess.cpp)
+        src/postprocess.cpp
+        src/postprocess/bloom.cpp)
 target_link_libraries(basics glfw assimp)
 
 add_executable(lighting
@@ -50,7 +51,8 @@ add_executable(lighting
         src/light.cpp
         src/model.cpp
         src/framebuffer.cpp
-        src/postprocess.cpp)
+        src/postprocess.cpp
+        src/postprocess/bloom.cpp)
 target_link_libraries(lighting glfw assimp)
 
 add_executable(model
@@ -67,7 +69,8 @@ add_executable(model
         src/light.cpp
         src/model.cpp
         src/framebuffer.cpp
-        src/postprocess.cpp)
+        src/postprocess.cpp
+        src/postprocess/bloom.cpp)
 target_link_libraries(model glfw assimp)
 
 add_executable(blending
@@ -84,7 +87,8 @@ add_executable(blending
         src/light.cpp
         src/model.cpp
         src/framebuffer.cpp
-        src/postprocess.cpp)
+        src/postprocess.cpp
+        src/postprocess/bloom.cpp)
 target_link_libraries(blending glfw assimp)
 
 add_executable(post-processing
@@ -101,7 +105,8 @@ add_executable(post-processing
         src/light.cpp
         src/model.cpp
         src/framebuffer.cpp
-        src/postprocess.cpp)
+        src/postprocess.cpp
+        src/postprocess/bloom.cpp)
 target_link_libraries(post-processing glfw assimp)
 
 add_executable(skybox
@@ -118,7 +123,8 @@ add_executable(skybox
         src/light.cpp
         src/model.cpp
         src/framebuffer.cpp
-        src/postprocess.cpp)
+        src/postprocess.cpp
+        src/postprocess/bloom.cpp)
 target_link_libraries(skybox glfw assimp)
 
 add_executable(instancing
@@ -135,7 +141,8 @@ add_executable(instancing
         src/light.cpp
         src/model.cpp
         src/framebuffer.cpp
-        src/postprocess.cpp)
+        src/postprocess.cpp
+        src/postprocess/bloom.cpp)
 target_link_libraries(instancing glfw assimp)
 
 add_executable(shadow-map
@@ -152,7 +159,8 @@ add_executable(shadow-map
         src/light.cpp
         src/model.cpp
         src/framebuffer.cpp
-        src/postprocess.cpp)
+        src/postprocess.cpp
+        src/postprocess/bloom.cpp)
 target_link_libraries(shadow-map glfw assimp)
 
 add_executable(point-shadow
@@ -169,5 +177,6 @@ add_executable(point-shadow
         src/light.cpp
         src/model.cpp
         src/framebuffer.cpp
-        src/postprocess.cpp)
+        src/postprocess.cpp
+        src/postprocess/bloom.cpp)
 target_link_libraries(point-shadow glfw assimp)
