@@ -9,11 +9,22 @@
 #include <light.h>
 #include <postprocess.h>
 #include <postprocess/bloom.h>
+#include <random>
 
 #define WIDTH 800
 #define HEIGHT 600
 
+#define N_LIGHTS 10
+
 using namespace glm;
+
+struct LightData {
+  Instance obj;
+  PointLight light;
+  DepthCubeFramebuffer shadow_buffer;
+  vec3 rotation_axis;
+  float rotation_speed, radius;
+};
 
 class DeferredRenderingWindow : public Window {
 public:
@@ -26,11 +37,8 @@ private:
   std::unique_ptr<Model> room_model, box_model, light_model;
   std::unique_ptr<Instance> room;
   std::vector<Instance> boxes;
-  std::vector<Instance> light_objs;
 
-  std::vector<PointLight> lights;
-  std::vector<unsigned> depth_cubemaps;
-  std::vector<unsigned> shadow_depth_fbos;
+  std::vector<LightData> lights;
 
   std::unique_ptr<TextureFramebuffer> g_buffer;
   std::unique_ptr<Mesh> screen_quad;
@@ -56,10 +64,11 @@ private:
 
     tonemap_program = Program("shaders/common/postprocess/vert.glsl", "shaders/common/postprocess/frag_tm_aces.glsl");
 
-    deferred_program = Program("shaders/common/postprocess/vert.glsl", "shaders/deferred-rendering/d_frag.glsl");
+    deferred_program = Program("shaders/deferred-rendering/d_vert.glsl", "shaders/deferred-rendering/d_frag.glsl");
 
     camera->set_matrix_binding(g_program);
     camera->set_matrix_binding(light_program);
+    camera->set_matrix_binding(deferred_program);
 
     // Setup G_Buffer
     // --------------------------------------------
@@ -102,18 +111,42 @@ private:
       boxes.push_back(box);
     }
 
+    // Setup lights
+    // --------------------------------------------
+
     light_model = std::make_unique<Model>(Model("assets/sphere.obj"));
-    light_objs.emplace_back(*light_model, light_program);
-    light_objs.emplace_back(*light_model, light_program);
 
-    // Lights
-    PointLight light0(1, vec3(0.0f), vec3(1.0f, 0.5f, 0.0f) * 100.0f);
-    light0.set_ubo_binding(deferred_program, "PointLightBlock0");
-    lights.push_back(light0);
+    std::random_device r;
+    std::default_random_engine e1(r());
+    std::uniform_real_distribution<float> col(0.1f, 1.0f);
+    std::uniform_real_distribution<float> pos(-1.0f, 1.0f);
 
-    PointLight light1(2, vec3(0.0f), vec3(0.0f, 0.3f, 1.0f) * 100.0f);
-    light1.set_ubo_binding(deferred_program, "PointLightBlock1");
-    lights.push_back(light1);
+    for (unsigned i = 0; i < N_LIGHTS; i++) {
+      vec3 light_color(col(e1), col(e1), col(e1));
+      vec3 rotation_axis(pos(e1), pos(e1), pos(e1));
+      float rotation_speed = (0.5f + col(e1)) * 45.0f;
+
+      PointLight light(1 + i, vec3(0.0f), light_color * 10.0f);
+      Instance light_obj(*light_model, light_program);
+      DepthCubeFramebuffer shadow_buffer(SHADOW_WIDTH, SHADOW_HEIGHT);
+
+      float threshold = 5.0f / 256.0f;
+      float i_max = max(light.diffuse.x, max(light.diffuse.y, light.diffuse.z));
+      float a = light.attenuation.z, b = light.attenuation.y;
+      float c = light.attenuation.x - i_max / threshold;
+      float radius = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
+
+      lights.push_back(
+        {
+          light_obj,
+          light,
+          shadow_buffer,
+          normalize(rotation_axis),
+          rotation_speed,
+          radius
+        }
+      );
+    }
 
     // Setup uniforms
     // --------------------------------------------
@@ -122,41 +155,11 @@ private:
     deferred_program.set("gNormal", 1);
     deferred_program.set("gAlbedoSpec", 2);
 
-    deferred_program.set("shadowMap0", 10);
-    deferred_program.set("shadowMap1", 11);
+    deferred_program.set("shadowMap", 10);
     deferred_program.set("farPlane", POINT_SHADOW_FAR);
-    deferred_program.set("material.shininess", 32.0f);
 
     shadow_program.use();
     shadow_program.set("farPlane", POINT_SHADOW_FAR);
-
-    // Setup shadow framebuffer
-    // --------------------------------------------
-    unsigned depth_cubemap, shadow_depth_fbo;
-    for (unsigned i = 0; i < 2; i++) {
-      glGenTextures(1, &depth_cubemap);
-
-      glBindTexture(GL_TEXTURE_CUBE_MAP, depth_cubemap);
-      for (unsigned f = GL_TEXTURE_CUBE_MAP_POSITIVE_X; f <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; f++) {
-        glTexImage2D(f, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-      }
-
-      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-      glGenFramebuffers(1, &shadow_depth_fbo);
-      glBindFramebuffer(GL_FRAMEBUFFER, shadow_depth_fbo);
-      glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_cubemap, 0);
-      glDrawBuffer(GL_NONE);
-      glReadBuffer(GL_NONE);
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-      depth_cubemaps.push_back(depth_cubemap);
-      shadow_depth_fbos.push_back(shadow_depth_fbo);
-    }
 
     // Setup screen quad
     // --------------------------------------------
@@ -188,26 +191,24 @@ private:
 
   void frame() override {
     // Update lights
-    lights[0].position = vec3(cos(current_frame) * 4.0f, 0.0f, sin(current_frame) * 4.0f);
-    lights[0].update_ubo();
-    light_objs[0].transform = translate(mat4(1.0), lights[0].position);
-    light_objs[0].transform = scale(light_objs[0].transform, vec3(0.05f));
+    for (auto &light: lights) {
+      light.obj.transform = rotate(mat4(1.0), radians(current_frame * light.rotation_speed), light.rotation_axis);
+      light.obj.transform = translate(light.obj.transform, vec3(0.0, 0.0, 4.0));
 
-    lights[1].position = vec3(sin(current_frame * 0.5f) * 4.0f, cos(current_frame * 0.5f) * 4.0f, 0.0f);
-    lights[1].update_ubo();
-    light_objs[1].transform = translate(mat4(1.0), lights[1].position);
-    light_objs[1].transform = scale(light_objs[1].transform, vec3(0.05f));
+      light.light.position = vec3(light.obj.transform * vec4(0.0, 0.0, 0.0, 1.0));
+      light.light.update_ubo();
+    }
 
     // Render shadow depth maps
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 
-    for (int i = 0; i < 2; i++) {
-      lights[i].set_ubo_binding(shadow_program, "PointLightBlock");
-      glBindFramebuffer(GL_FRAMEBUFFER, shadow_depth_fbos[i]);
+    for (auto &light: lights) {
+      light.shadow_buffer.bind();
       glClear(GL_DEPTH_BUFFER_BIT);
+      light.light.set_ubo_binding(shadow_program, "PointLightBlock");
       for (const auto &box: boxes) box.draw_with(shadow_program);
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+    Framebuffer::unbind();
 
     // Geometry pass
     glViewport(0, 0, viewport_width, viewport_height);
@@ -233,12 +234,21 @@ private:
     g_buffer->bind_texture(1, 1);
     g_buffer->bind_texture(2, 2);
 
-    for (int i = 0; i < 2; i++) {
-      glActiveTexture(GL_TEXTURE10 + i);
-      glBindTexture(GL_TEXTURE_CUBE_MAP, depth_cubemaps[i]);
-    }
+    glEnable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc(GL_ONE, GL_ONE);
+    glCullFace(GL_FRONT);
+    for (auto &light: lights) {
+      light.light.set_ubo_binding(deferred_program, "PointLightBlock");
+      glActiveTexture(GL_TEXTURE10);
+      glBindTexture(GL_TEXTURE_CUBE_MAP, light.shadow_buffer.depth_map());
 
-    screen_quad->draw(deferred_program);
+      light.obj.transform = scale(light.obj.transform, vec3(light.radius));
+      light.obj.draw_with(deferred_program);
+    }
+    glCullFace(GL_BACK);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
 
     // Forward rendering pass (lights)
     glBindFramebuffer(GL_READ_FRAMEBUFFER, g_buffer->id());
@@ -250,7 +260,10 @@ private:
     );
     post_processing->bind_input_framebuffer();
 
-    for (const auto &light: light_objs) light.draw();
+    for (auto &light: lights) {
+      light.obj.transform = scale(light.obj.transform, vec3(0.05f / light.radius));
+      light.obj.draw();
+    }
 
     Framebuffer::unbind();
 

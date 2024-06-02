@@ -97,3 +97,33 @@ void DepthFramebuffer::free() {
   glDeleteTextures(1, &_depth);
   glDeleteFramebuffers(1, &_id);
 }
+
+DepthCubeFramebuffer::DepthCubeFramebuffer(int width, int height) : Framebuffer(), _depth(0) {
+  glBindFramebuffer(GL_FRAMEBUFFER, _id);
+
+  glGenTextures(1, &_depth);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, _depth);
+  for (unsigned f = GL_TEXTURE_CUBE_MAP_POSITIVE_X; f <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; f++) {
+    glTexImage2D(f, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+  }
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depth, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+unsigned DepthCubeFramebuffer::depth_map() const {
+  return _depth;
+}
+
+void DepthCubeFramebuffer::free() {
+  glDeleteTextures(1, &_depth);
+  glDeleteFramebuffers(1, &_id);
+}

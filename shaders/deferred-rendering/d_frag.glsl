@@ -1,10 +1,6 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec2 texCoord;
-in vec3 fragPos;
-in mat3 TBN;
-
 uniform vec3 viewPos;
 
 uniform sampler2D gPosition;
@@ -20,15 +16,11 @@ struct PointLight {
     mat4 lightMatrices[6];
 };
 
-layout (std140) uniform PointLightBlock0 {
-    PointLight pointLight0;
-};
-layout (std140) uniform PointLightBlock1 {
-    PointLight pointLight1;
+layout (std140) uniform PointLightBlock {
+    PointLight pointLight;
 };
 
-uniform samplerCube shadowMap0;
-uniform samplerCube shadowMap1;
+uniform samplerCube shadowMap;
 uniform float farPlane;
 
 #define SAMPLES 20
@@ -63,6 +55,7 @@ float calculateShadow(PointLight light, vec3 fragPos, samplerCube shadowMap) {
 vec3 calculatePointLight(PointLight light, vec3 diffMap, float specMap, vec3 fragPos, vec3 viewDir, samplerCube shadowMap) {
     vec3 ambient = diffMap * light.ambient;
 
+    vec2 texCoord = gl_FragCoord.xy / textureSize(gPosition, 0);
     vec3 normal = texture(gNormal, texCoord).rgb;
     if (length(normal) == 0.0) discard;
 
@@ -83,13 +76,14 @@ vec3 calculatePointLight(PointLight light, vec3 diffMap, float specMap, vec3 fra
 }
 
 void main() {
+    vec2 texCoord = gl_FragCoord.xy / textureSize(gPosition, 0);
+
     vec3 fragPos = texture(gPosition, texCoord).xyz;
     vec3 viewDir = normalize(fragPos - viewPos);
 
     vec4 diffSpec = texture(gAlbedoSpec, texCoord);
 
     vec3 color = vec3(0.0);
-    color += calculatePointLight(pointLight0, diffSpec.rgb, diffSpec.a, fragPos, viewDir, shadowMap0);
-    color += calculatePointLight(pointLight1, diffSpec.rgb, diffSpec.a, fragPos, viewDir, shadowMap1);
+    color += calculatePointLight(pointLight, diffSpec.rgb, diffSpec.a, fragPos, viewDir, shadowMap);
     FragColor = vec4(color, 1.0);
 }

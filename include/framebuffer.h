@@ -49,4 +49,16 @@ public:
   void free() override;
 };
 
+class DepthCubeFramebuffer : public Framebuffer {
+private:
+  unsigned _depth;
+
+public:
+  DepthCubeFramebuffer(int width, int height);
+
+  unsigned depth_map() const;
+
+  void free() override;
+};
+
 #endif //LEARN_OPENGL_FRAMEBUFFER_H
